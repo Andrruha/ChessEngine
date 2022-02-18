@@ -1,7 +1,7 @@
 #include <cstdint>
 
 #include "chess_coordinates.h"
-#include "chess_move.h"
+#include "chess_piece.h"
 
 namespace chess_engine {
 
