@@ -1,3 +1,6 @@
+#ifndef CHESS_ENGINE_SRC_CHESS_COORDINATES_
+#define CHESS_ENGINE_SRC_CHESS_COORDINATES_
+
 #include <cstdint>
 
 namespace chess_engine {
@@ -8,3 +11,5 @@ struct Coordinates {
 };
 
 }  // namespace chess_engine
+
+#endif  // CHESS_ENGINE_SRC_CHESS_COORDINATES_

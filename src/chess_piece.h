@@ -1,5 +1,5 @@
-#ifndef CHESS_ENGINE_SRC_CHESS_PIECES_
-#define CHESS_ENGINE_SRC_CHESS_PIECES_
+#ifndef CHESS_ENGINE_SRC_CHESS_PIECE_
+#define CHESS_ENGINE_SRC_CHESS_PIECE_
 
 #include <cstdint>
 
@@ -43,4 +43,4 @@ Piece GetPieceColor(Piece piece);
 
 }  // namespace chess_engine
 
-#endif  // CHESS_ENGINE_SRC_CHESS_PIECES_
+#endif  // CHESS_ENGINE_SRC_CHESS_PIECE_
