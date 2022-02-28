@@ -5,26 +5,39 @@
 
 namespace chess_engine {
 
-Piece GetPieceType(Piece piece) {
-  return static_cast<Piece>(static_cast<uint8_t>(piece) & 0x7u);
+int8_t DoubleJumpRank(Player player) {
+  if (player == Player::kWhite) {
+    return 1;
+  } else if (player == Player::kBlack) {
+    return 6;
+  }
+  assert(false);  // Invalid player value
+  return -1;
 }
 
-Piece GetPieceColor(Piece piece) {
-  return static_cast<Piece>(static_cast<uint8_t>(piece) & (0x3u << 3));
+int8_t PromotionRank(Player player) {
+  if (player == Player::kWhite) {
+    return 7;
+  } else if (player == Player::kBlack) {
+    return 0;
+  }
+  assert(false);  // Invalid player value
+  return -1;
 }
 
-Piece SetPieceType(Piece piece, Piece type) {
-  assert(GetPieceColor(type) == Piece::kNone);  // There is more info, then just a type
-  Piece color = GetPieceColor(piece);
-  type = GetPieceType(type);
-  return static_cast<Piece>(static_cast<uint8_t>(color)|static_cast<uint8_t>(type));
+int8_t PawnDirection(Player player) {
+  if (player == Player::kWhite) {
+    return 1;
+  } else if (player == Player::kBlack) {
+    return -1;
+  }
+  assert(false);  // Invalid player value
+  return 0;
 }
 
-Piece SetPieceColor(Piece piece, Piece color) {
-  assert(GetPieceType(color) == Piece::kNone);  // There is more info, then just a color
-  Piece type = GetPieceType(piece);
-  color = GetPieceType(color);
-  return static_cast<Piece>(static_cast<uint8_t>(color)|static_cast<uint8_t>(type));
+bool WithinTheBoard(Coordinates square) {
+  return 0 < square.file && square.file < 7 && 
+         0 < square.rank && square.rank < 7;  
 }
 
 }  // namespace chess_engine
