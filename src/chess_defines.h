@@ -27,7 +27,7 @@ enum struct Player {
 struct Piece {
   PieceType type;
   Player player;
-}
+};
 
 enum struct Castle {
   kKingside = 0,

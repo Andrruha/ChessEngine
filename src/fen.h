@@ -7,7 +7,6 @@
 #include <string>
 
 #include "chess_defines.h"
-#include "position.h"
 
 namespace chess_engine {
 

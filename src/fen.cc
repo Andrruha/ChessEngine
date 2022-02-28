@@ -37,7 +37,7 @@ namespace chess_engine {
     }
     // Check if player is valid
     assert(piece.player == Player::kWhite || piece.player == Player::kBlack);
-    if (color == Piece::kWhite) {
+    if (piece.player == Player::kWhite) {
       ret = std::toupper(ret);
     }
     return ret;
@@ -69,11 +69,11 @@ namespace chess_engine {
         ret.type = PieceType::kQueen;
         break;
       case 'k':
-        ret.type = PieceType::kNone;
+        ret.type = PieceType::kKing;
         break;
       default:
         ret.type = PieceType::kNone;  // No piece type, but also no color.
-        ret.player = PieceType::kNone;
+        ret.player = Player::kNone;
     }
     return ret;
   }
