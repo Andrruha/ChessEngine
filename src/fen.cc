@@ -9,74 +9,73 @@ namespace chess_engine {
 
   unsigned char PieceToFen(Piece piece) {
     unsigned char ret;
-    Piece type = GetPieceType(piece);
-    switch (type) {
-      case Piece::kNone:
+    switch (piece.type) {
+      case PieceType::kNone:
         return ' ';  // Return, because color doesn't make sense here
         break;
-      case Piece::kPawn:
+      case PieceType::kPawn:
         ret = 'p';        
         break;
-      case Piece::kRook:
+      case PieceType::kRook:
         ret = 'r';
         break;
-      case Piece::kKnight:
+      case PieceType::kKnight:
         ret = 'n';
         break;
-      case Piece::kBishop:
+      case PieceType::kBishop:
         ret = 'b';
         break;
-      case Piece::kQueen:
+      case PieceType::kQueen:
         ret = 'q';
         break;
-      case Piece::kKing:
+      case PieceType::kKing:
         ret = 'k';
         break;
       default:
         assert(false);  // Piece type is invalid
         return '?';  // Return, because color is nonsensical
     }
-
-    Piece color = GetPieceColor(piece);
-    assert(color != Piece::kNone);  // Piece doesn't have a color
+    // Check if player is valid
+    assert(piece.player == Player::kWhite || piece.player == Player::kBlack);
     if (color == Piece::kWhite) {
       ret = std::toupper(ret);
     }
-
     return ret;
   }
 
   Piece FenToPiece(unsigned char fen) {
-    Piece color = Piece::kNone;
+    Piece ret;
     if (std::islower(fen)) {
-      color = Piece::kBlack;
+      ret.player = Player::kBlack;
     } else if (std::isupper(fen)) {
-      color = Piece::kWhite;
+      ret.player = Player::kWhite;
       fen = std::tolower(fen);
     }
 
     switch (fen) {
       case 'p':
-        return SetPieceType(color, Piece::kPawn);        
+        ret.type = PieceType::kPawn;      
         break;
       case 'r':
-        return SetPieceType(color, Piece::kRook);
+        ret.type = PieceType::kRook;
         break;
       case 'n':
-        return SetPieceType(color, Piece::kKnight);
+        ret.type = PieceType::kKnight;
         break;
       case 'b':
-        return SetPieceType(color, Piece::kBishop);
+        ret.type = PieceType::kBishop;
         break;
       case 'q':
-        return SetPieceType(color, Piece::kQueen);
+        ret.type = PieceType::kQueen;
         break;
       case 'k':
-        return SetPieceType(color, Piece::kKing);
+        ret.type = PieceType::kNone;
         break;
       default:
-        return Piece::kNone;  // No piece type, but also no color.
+        ret.type = PieceType::kNone;  // No piece type, but also no color.
+        ret.player = PieceType::kNone;
     }
+    return ret;
   }
 
 }  // namespace chess_engine

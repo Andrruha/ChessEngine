@@ -8,46 +8,27 @@
 
 namespace chess_engine {
 
-// Light weight representation of a chess piece to be used in the engine.
-// Can be used to specify just piece type or just piece color.
-// 3 least significant bits represent piece type.
-// Next 2 bits represent piece color.
-enum struct Piece : uint8_t {
-  kNone        = 000,  // values are given in base 8!
-  kPawn        = 001,
-  kRook        = 002,
-  kKnight      = 003,
-  kBishop      = 004,
-  kQueen       = 005,
-  kKing        = 006,
-  kWhite       = 010,
-  kWhitePawn   = 011,
-  kWhiteRook   = 012,
-  kWhiteKnight = 013,
-  kWhiteBishop = 014,
-  kWhiteQueen  = 015,
-  kWhiteKing   = 016,
-  kBlack       = 020,
-  kBlackPawn   = 021,
-  kBlackRook   = 022,
-  kBlackKnight = 023,
-  kBlackBishop = 024,
-  kBlackQueen  = 025,
-  kBlackKing   = 026
+enum struct PieceType : uint8_t {
+  kNone   = 0,
+  kPawn   = 1,
+  kRook   = 2,
+  kKnight = 3,
+  kBishop = 4,
+  kQueen  = 5,
+  kKing   = 6
 };
-
-Piece GetPieceType(Piece piece);
-Piece GetPieceColor(Piece piece);
-
-// Returns a piece with modified piece type
-[[nodiscard]] Piece SetPieceType(Piece piece, Piece type);
-// Returns a piece with modified piece color
-[[nodiscard]] Piece SetPieceColor(Piece piece, Piece color);
 
 enum struct Player {
-  kWhite = 0,
-  kBlack = 1
+  kNone  = 0,
+  kWhite = 1,
+  kBlack = 2
 };
+
+struct Piece {
+  PieceType type;
+  Player player;
+}
+
 enum struct Castle {
   kKingside = 0,
   kQueenside = 1
@@ -63,6 +44,12 @@ struct Move {
   Coordinates to;
   Piece piece;  // Piece that moves or piece to promote to.
 };
+
+int8_t DoubleJumpRank(Player player);
+int8_t PromotionRank(Player player);
+int8_t PawnDirection(Player player);
+
+bool WithinTheBoard(Coordinates square);
 
 }  // namespace chess_engine
 
