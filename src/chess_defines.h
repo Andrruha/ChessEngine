@@ -29,6 +29,30 @@ struct Piece {
   Player player;
 };
 
+namespace pieces {
+  constexpr Piece kNone = {PieceType::kNone, Player::kNone};
+  constexpr Piece kPawn = {PieceType::kPawn, Player::kNone};
+  constexpr Piece kRook = {PieceType::kRook, Player::kNone};
+  constexpr Piece kKnight = {PieceType::kKnight, Player::kNone};
+  constexpr Piece kBishop = {PieceType::kBishop, Player::kNone};
+  constexpr Piece kQueen = {PieceType::kQueen, Player::kNone};
+  constexpr Piece kKing = {PieceType::kKing, Player::kNone};
+  constexpr Piece kWhite = {PieceType::kNone, Player::kWhite};
+  constexpr Piece kWhitePawn = {PieceType::kPawn, Player::kWhite};
+  constexpr Piece kWhiteRook = {PieceType::kRook, Player::kWhite};
+  constexpr Piece kWhiteKnight = {PieceType::kKnight, Player::kWhite};
+  constexpr Piece kWhiteBishop = {PieceType::kBishop, Player::kWhite};
+  constexpr Piece kWhiteQueen = {PieceType::kQueen, Player::kWhite};
+  constexpr Piece kWhiteKing = {PieceType::kKing, Player::kWhite};
+  constexpr Piece kBlack = {PieceType::kNone, Player::kBlack};
+  constexpr Piece kBlackPawn = {PieceType::kPawn, Player::kBlack};
+  constexpr Piece kBlackRook = {PieceType::kRook, Player::kBlack};
+  constexpr Piece kBlackKnight = {PieceType::kKnight, Player::kBlack};
+  constexpr Piece kBlackBishop = {PieceType::kBishop, Player::kBlack};
+  constexpr Piece kBlackQueen = {PieceType::kQueen, Player::kBlack};
+  constexpr Piece kBlackKing = {PieceType::kKing, Player::kBlack};
+}
+
 enum struct Castle {
   kKingside = 0,
   kQueenside = 1
