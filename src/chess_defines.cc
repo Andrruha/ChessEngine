@@ -33,11 +33,11 @@ bool operator!=(Coordinates first, Coordinates second) {
 
 bool BelongsToLine(Segment line, Coordinates point) {
   Coordinates big_delta;
-  big_delta.file = segment.end.file - segment.start.file;
-  big_delta.rank = segment.end.rank - segment.start.rank;
+  big_delta.file = line.end.file - line.start.file;
+  big_delta.rank = line.end.rank - line.start.rank;
   Coordinates small_delta;
-  small_delta.file = point.file - segment.start.file;
-  small_delta.rank = point.rank - segment.start.rank;
+  small_delta.file = point.file - line.start.file;
+  small_delta.rank = point.rank - line.start.rank;
   return small_delta.file*big_delta.rank == small_delta.rank*big_delta.file;
 }
 
@@ -48,7 +48,7 @@ bool BelongsToSegment(Segment segment, Coordinates point) {
   Coordinates small_delta;
   small_delta.file = point.file - segment.start.file;
   small_delta.rank = point.rank - segment.start.rank;
-  Coordinates raminder;
+  Coordinates remainder;
   remainder.file = segment.end.file - point.file;
   remainder.rank = segment.end.rank - point.rank;
   if (small_delta.file*big_delta.rank != small_delta.rank*big_delta.file) {

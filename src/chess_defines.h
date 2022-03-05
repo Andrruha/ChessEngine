@@ -34,30 +34,30 @@ struct Piece {
 bool operator==(Piece first, Piece second);
 bool operator!=(Piece first, Piece second);
 namespace pieces {
-  Piece kNone = {PieceType::kNone, Player::kNone};
-  Piece kPawn = {PieceType::kPawn, Player::kNone};
-  Piece kRook = {PieceType::kRook, Player::kNone};
-  Piece kKnight = {PieceType::kKnight, Player::kNone};
-  Piece kBishop = {PieceType::kBishop, Player::kNone};
-  Piece kQueen = {PieceType::kQueen, Player::kNone};
-  Piece kKing = {PieceType::kKing, Player::kNone};
-  Piece kWhite = {PieceType::kNone, Player::kWhite};
-  Piece kWhitePawn = {PieceType::kPawn, Player::kWhite};
-  Piece kWhiteRook = {PieceType::kRook, Player::kWhite};
-  Piece kWhiteKnight = {PieceType::kKnight, Player::kWhite};
-  Piece kWhiteBishop = {PieceType::kBishop, Player::kWhite};
-  Piece kWhiteQueen = {PieceType::kQueen, Player::kWhite};
-  Piece kWhiteKing = {PieceType::kKing, Player::kWhite};
-  Piece kBlack = {PieceType::kNone, Player::kBlack};
-  Piece kBlackPawn = {PieceType::kPawn, Player::kBlack};
-  Piece kBlackRook = {PieceType::kRook, Player::kBlack};
-  Piece kBlackKnight = {PieceType::kKnight, Player::kBlack};
-  Piece kBlackBishop = {PieceType::kBishop, Player::kBlack};
-  Piece kBlackQueen = {PieceType::kQueen, Player::kBlack};
-  Piece kBlackKing = {PieceType::kKing, Player::kBlack};
+  const Piece kNone = {PieceType::kNone, Player::kNone};
+  const Piece kPawn = {PieceType::kPawn, Player::kNone};
+  const Piece kRook = {PieceType::kRook, Player::kNone};
+  const Piece kKnight = {PieceType::kKnight, Player::kNone};
+  const Piece kBishop = {PieceType::kBishop, Player::kNone};
+  const Piece kQueen = {PieceType::kQueen, Player::kNone};
+  const Piece kKing = {PieceType::kKing, Player::kNone};
+  const Piece kWhite = {PieceType::kNone, Player::kWhite};
+  const Piece kWhitePawn = {PieceType::kPawn, Player::kWhite};
+  const Piece kWhiteRook = {PieceType::kRook, Player::kWhite};
+  const Piece kWhiteKnight = {PieceType::kKnight, Player::kWhite};
+  const Piece kWhiteBishop = {PieceType::kBishop, Player::kWhite};
+  const Piece kWhiteQueen = {PieceType::kQueen, Player::kWhite};
+  const Piece kWhiteKing = {PieceType::kKing, Player::kWhite};
+  const Piece kBlack = {PieceType::kNone, Player::kBlack};
+  const Piece kBlackPawn = {PieceType::kPawn, Player::kBlack};
+  const Piece kBlackRook = {PieceType::kRook, Player::kBlack};
+  const Piece kBlackKnight = {PieceType::kKnight, Player::kBlack};
+  const Piece kBlackBishop = {PieceType::kBishop, Player::kBlack};
+  const Piece kBlackQueen = {PieceType::kQueen, Player::kBlack};
+  const Piece kBlackKing = {PieceType::kKing, Player::kBlack};
 }
 
-std::array<PieceType,4> kPromotionOptions = {
+const std::array<PieceType,4> kPromotionOptions = {
   PieceType::kRook, PieceType::kKnight,
   PieceType::kBishop, PieceType::kQueen
 };
@@ -75,10 +75,10 @@ struct Coordinates {
 bool operator==(Coordinates first, Coordinates second);
 bool operator!=(Coordinates first, Coordinates second);
 
-sturct Segment {
+struct Segment {
   Coordinates start;
   Coordinates end;
-}
+};
 
 bool BelongsToLine(Segment line, Coordinates point);
 bool BelongsToSegment(Segment segmant, Coordinates point);
