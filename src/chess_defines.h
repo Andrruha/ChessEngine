@@ -81,7 +81,7 @@ struct Segment {
 };
 
 bool BelongsToLine(Segment line, Coordinates point);
-bool BelongsToSegment(Segment segmant, Coordinates point);
+bool BelongsToSegment(Segment segment, Coordinates point);
 
 struct Move {
   Coordinates from; 
