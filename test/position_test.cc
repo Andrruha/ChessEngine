@@ -52,3 +52,7 @@ TEST_CASE("Make some moves", "[position]") {
   REQUIRE(pos.GetSquare(5,5) == chess_engine::pieces::kBlackKnight);
 }
 
+TEST_CASE("Count moves", "[position]") {
+  chess_engine::Position pos = StartingPosition();
+  REQUIRE(pos.GetLegalMoves.size() == 40u);
+}
