@@ -15,11 +15,11 @@ chess_engine::Position StartingPosition() {
   ret.SetSquare({6,0}, chess_engine::pieces::kWhiteKnight);
   ret.SetSquare({7,0}, chess_engine::pieces::kWhiteRook);
 
-  for (int i = 0;  i < 8; ++i) {
+  for (int8_t i = 0; i < 8; ++i) {
     ret.SetSquare({i,1}, chess_engine::pieces::kWhitePawn);
   }
 
-  for (int i = 0;  i < 8; ++i) {
+  for (int8_t i = 0; i < 8; ++i) {
     ret.SetSquare({i,6}, chess_engine::pieces::kBlackPawn);
   }
 
@@ -39,20 +39,20 @@ chess_engine::Position StartingPosition() {
 TEST_CASE("Make some moves", "[position]") {
   chess_engine::Position pos = StartingPosition();
 
-  REQUIRE(pos.GetSquare({4,1}) == chess_engine::pieces::kWhitePawn});
-  REQUIRE(pos.GetSquare(4,3) == chess_engine::pieces::kNone);
+  REQUIRE(pos.GetSquare({4,1}) == chess_engine::pieces::kWhitePawn);
+  REQUIRE(pos.GetSquare({4,3}) == chess_engine::pieces::kNone);
   pos.MakeMove({{4,1}, {4,3}, chess_engine::pieces::kWhitePawn});
-  REQUIRE(pos.GetSquare(4,1) == chess_engine::pieces::kNone);
-  REQUIRE(pos.GetSquare(4,3) == chess_engine::pieces::kWhitePawn);
+  REQUIRE(pos.GetSquare({4,1}) == chess_engine::pieces::kNone);
+  REQUIRE(pos.GetSquare({4,3}) == chess_engine::pieces::kWhitePawn);
 
-  REQUIRE(pos.GetSquare(6,7) == chess_engine::pieces::kBlackKnight);
-  REQUIRE(pos.GetSquare(5,5) == chess_engine::pieces::kNone);
+  REQUIRE(pos.GetSquare({6,7}) == chess_engine::pieces::kBlackKnight);
+  REQUIRE(pos.GetSquare({5,5}) == chess_engine::pieces::kNone);
   pos.MakeMove({{6,7}, {5,5}, chess_engine::pieces::kBlackKnight});
-  REQUIRE(pos.GetSquare(6,7) == chess_engine::pieces::kNone);
-  REQUIRE(pos.GetSquare(5,5) == chess_engine::pieces::kBlackKnight);
+  REQUIRE(pos.GetSquare({6,7}) == chess_engine::pieces::kNone);
+  REQUIRE(pos.GetSquare({5,5}) == chess_engine::pieces::kBlackKnight);
 }
 
 TEST_CASE("Count moves", "[position]") {
   chess_engine::Position pos = StartingPosition();
-  REQUIRE(pos.GetLegalMoves.size() == 40u);
+  REQUIRE(pos.GetLegalMoves().size() == 40u);
 }

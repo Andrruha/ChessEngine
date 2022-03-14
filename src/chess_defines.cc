@@ -15,6 +15,16 @@ Player Opponent(Player player) {
   return Player::kNone;
 }
 
+Coordinates& Coordinates::operator+=(Coordinates other) {
+  file += other.file;
+  rank += other.rank;
+  return *this;
+}
+
+Coordinates Coordinates::operator-() {
+  return {static_cast<int8_t>(-file), static_cast<int8_t>(-rank)};
+}
+
 bool operator==(Piece first, Piece second) {
   return first.type == second.type && first.player == second.player;
 }
@@ -102,8 +112,8 @@ int8_t PawnDirection(Player player) {
 }
 
 bool WithinTheBoard(Coordinates square) {
-  return 0 < square.file && square.file < 7 && 
-         0 < square.rank && square.rank < 7;  
+  return 0 <= square.file && square.file < 8 && 
+         0 <= square.rank && square.rank < 8;  
 }
 
 }  // namespace chess_engine
