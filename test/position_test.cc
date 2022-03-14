@@ -54,5 +54,5 @@ TEST_CASE("Make some moves", "[position]") {
 
 TEST_CASE("Count moves", "[position]") {
   chess_engine::Position pos = StartingPosition();
-  REQUIRE(pos.GetLegalMoves().size() == 40u);
+  REQUIRE(pos.GetLegalMoves().size() == 20u);
 }
