@@ -21,6 +21,9 @@ Coordinates StringToCoordinates(const std::string& str);
 Position FenToPosition(const std::string& fen);
 std::string PositionToFen(const Position& position);
 
+std::string MoveToUci(Move move, const Position& position);
+Move UciToMove(const std::string& str, const Position& position);
+
 } //  namespace chess_engine
 
 #endif  // CHESS_ENGINE_SRC_FEN
