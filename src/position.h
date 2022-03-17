@@ -35,7 +35,10 @@ class Position {
 
   // Castling works correctly, if rooks and kings are on the normal squares
   bool GetCastlingRights(Player player, Castle castle) const; 
-  bool SetCastlingRights(Player player, Castle castle);
+  void SetCastlingRights(Player player, Castle castle, bool value);
+
+  Coordinates GetEnPessant() const;
+  void SetEnPessant(Coordinates square);
   
   Coordinates GetKing(Player player) const;
 

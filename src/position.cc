@@ -164,6 +164,50 @@ void Position::SetSquare(Coordinates square, Piece piece) {
   board_[square.file][square.rank] = piece;
 }
 
+
+bool Position::GetCastlingRights(Player player, Castle castle) const {
+  if (player == Player::kWhite) {
+    if (castle == Castle::kKingside) {
+      return white_castle_kingside_;
+    } else if (castle == Castle::kQueenside){
+      return white_castle_queenside_;
+    }
+  } else if (player == Player::kBlack) {
+    if (castle == Castle::kKingside) {
+      return black_castle_kingside_;
+    } else if (castle == Castle::kQueenside){
+      return black_castle_queenside_;
+    }
+  }
+  assert(false);  // Invalid player or castling side
+  return false;
+}
+
+void Position::SetCastlingRights(Player player, Castle castle, bool value) {
+  if (player == Player::kWhite) {
+    if (castle == Castle::kKingside) {
+      white_castle_kingside_ = value;
+    } else if (castle == Castle::kQueenside){
+      white_castle_queenside_ = value;
+    }
+  } else if (player == Player::kBlack) {
+    if (castle == Castle::kKingside) {
+      black_castle_kingside_ = value;
+    } else if (castle == Castle::kQueenside){
+      black_castle_queenside_ = value;
+    }
+  }
+  assert(false);  // Invalid player or castling side
+}
+
+Coordinates Position::GetEnPessant() const {
+  return en_pessant_;
+}
+
+void Position::SetEnPessant(Coordinates square) {
+  en_pessant_ = square;
+}
+
 Position::AttackInfo Position::UpdateAttacks (
   Coordinates square,
   Piece piece,
