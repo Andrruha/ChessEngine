@@ -153,12 +153,16 @@ Position FenToPosition(const std::string& fen) {
   if (parts[2].find('q') == std::string::npos) {
     ret.SetCastlingRights(Player::kBlack, Castle::kQueenside, false);
   }
+
   if (parts[3] == "-") {
     ret.SetEnPessant({-1,-1});
   } else {
     ret.SetEnPessant(StringToCoordinates(parts[3]));
   }
-  // TODO(Andrey): 50 moves rule and turn number
+  
+  ret.SetHalfmoveClock(std::stoi(parts[4]));
+  ret.SetMoveNumber(std::stoi(parts[5]));
+
   return ret;
 }
 
@@ -217,8 +221,10 @@ std::string PositionToFen(const Position& position) {
   ret += ' ';
 
   ret += CoordinatesToString(position.GetEnPessant());
-
-  ret += " 0 0";  // TODO(Andrey): Finish!
+  ret += ' ';
+  ret += std::to_string(position.GetHalfmoveClock());
+  ret += ' ';
+  ret += std::to_string(position.GetMoveNumber());
 
   return ret;
 }
