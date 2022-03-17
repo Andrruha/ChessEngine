@@ -32,6 +32,7 @@ void Position::SetPlayerToMove(Player player) {
    if (to_move_ == Player::kWhite) {
      to_move_ = Player::kBlack;
    } else {
+     ++move_number_;
      to_move_ = Player::kWhite;
    }
  }
@@ -95,6 +96,13 @@ void Position::MakeMove(Move move) {
     black_castle_kingside_ = false;
     black_castle_queenside_ = false;
   }
+
+  if (GetSquare(move.from).type == PieceType::kPawn) {
+    halfmove_clock_ = 0;
+  } else {
+    ++halfmove_clock_;
+  }
+
   PassTheTurn();
 }
 
@@ -162,6 +170,65 @@ void Position::SetSquare(Coordinates square, Piece piece) {
   UpdateStraightAttacks(square, delayed_attacks, block_delta);
 
   board_[square.file][square.rank] = piece;
+}
+
+
+bool Position::GetCastlingRights(Player player, Castle castle) const {
+  if (player == Player::kWhite) {
+    if (castle == Castle::kKingside) {
+      return white_castle_kingside_;
+    } else if (castle == Castle::kQueenside){
+      return white_castle_queenside_;
+    }
+  } else if (player == Player::kBlack) {
+    if (castle == Castle::kKingside) {
+      return black_castle_kingside_;
+    } else if (castle == Castle::kQueenside){
+      return black_castle_queenside_;
+    }
+  }
+  assert(false);  // Invalid player or castling side
+  return false;
+}
+
+void Position::SetCastlingRights(Player player, Castle castle, bool value) {
+  if (player == Player::kWhite) {
+    if (castle == Castle::kKingside) {
+      white_castle_kingside_ = value;
+    } else if (castle == Castle::kQueenside){
+      white_castle_queenside_ = value;
+    }
+  } else if (player == Player::kBlack) {
+    if (castle == Castle::kKingside) {
+      black_castle_kingside_ = value;
+    } else if (castle == Castle::kQueenside){
+      black_castle_queenside_ = value;
+    }
+  }
+  assert(false);  // Invalid player or castling side
+}
+
+  int16_t Position::GetMoveNumber() const {
+    return move_number_;
+  }
+
+  void Position::SetMoveNumber(int16_t value) {
+    move_number_ = value;
+  }
+
+  int16_t Position::GetHalfmoveClock() const {
+    return halfmove_clock_;
+  }
+  void Position::SetHalfmoveClock(int16_t value) {
+    halfmove_clock_ = value;
+  }
+
+Coordinates Position::GetEnPessant() const {
+  return en_pessant_;
+}
+
+void Position::SetEnPessant(Coordinates square) {
+  en_pessant_ = square;
 }
 
 Position::AttackInfo Position::UpdateAttacks (
@@ -315,6 +382,9 @@ int8_t Position::GetChecks(Player player) const {
 }
 
 void Position::GenerateMoves() const {
+  if (halfmove_clock_ == 100) {
+    return;
+  }
   for (int8_t file = 0; file < 8; ++file) {
     for (int8_t rank = 0; rank < 8; ++rank) {
       Piece piece = board_[file][rank];

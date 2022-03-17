@@ -7,13 +7,22 @@
 #include <string>
 
 #include "chess_defines.h"
-
+#include "position.h"
 namespace chess_engine {
 
 // In FEN the case of a letter indicates piece color.
 unsigned char PieceToFen(Piece piece);
 // In FEN the case of a letter indicates piece color.
 Piece FenToPiece(unsigned char fen);
+
+std::string CoordinatesToString(Coordinates coordinates);
+Coordinates StringToCoordinates(const std::string& str);
+
+Position FenToPosition(const std::string& fen);
+std::string PositionToFen(const Position& position);
+
+std::string MoveToUci(Move move, const Position& position);
+Move UciToMove(const std::string& str, const Position& position);
 
 } //  namespace chess_engine
 

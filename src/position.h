@@ -35,7 +35,16 @@ class Position {
 
   // Castling works correctly, if rooks and kings are on the normal squares
   bool GetCastlingRights(Player player, Castle castle) const; 
-  bool SetCastlingRights(Player player, Castle castle);
+  void SetCastlingRights(Player player, Castle castle, bool value);
+
+  int16_t GetMoveNumber() const;
+  void SetMoveNumber(int16_t value);
+
+  int16_t GetHalfmoveClock() const;
+  void SetHalfmoveClock(int16_t value);
+
+  Coordinates GetEnPessant() const;
+  void SetEnPessant(Coordinates square);
   
   Coordinates GetKing(Player player) const;
 
@@ -138,6 +147,9 @@ class Position {
   bool black_castle_queenside_ = true;
 
   Coordinates en_pessant_ = {-1,-1};
+  int16_t halfmove_clock_ = 0;
+  int16_t move_number_ = 0;
+
   Coordinates white_king_ = {-1,-1};
   Coordinates black_king_ = {-1,-1};
   Segment check_segment_ = {{-1,-1},{-1,-1}};
