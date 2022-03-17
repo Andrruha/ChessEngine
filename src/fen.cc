@@ -229,7 +229,7 @@ std::string PositionToFen(const Position& position) {
   return ret;
 }
 
-std::string UciToString(Move move, const Position& position) {
+std::string MoveToUci(Move move, const Position& position) {
   std::string ret;
   ret += CoordinatesToString(move.from) + CoordinatesToString(move.to);
   Piece old_piece = position.GetSquare(move.from);
@@ -240,7 +240,7 @@ std::string UciToString(Move move, const Position& position) {
   return ret;
 }
 
-Move StringToUci(const std::string& str, const Position& position) {
+Move UciToMove(const std::string& str, const Position& position) {
   Move ret;
   ret.from = StringToCoordinates(str);
   ret.to = StringToCoordinates(str.substr(2));
