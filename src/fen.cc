@@ -229,4 +229,27 @@ std::string PositionToFen(const Position& position) {
   return ret;
 }
 
+std::string UciToString(Move move, const Position& position) {
+  std::string ret;
+  ret += CoordinatesToString(move.from) + CoordinatesToString(move.to);
+  Piece old_piece = position.GetSquare(move.from);
+  if (old_piece.type == PieceType::kPawn && move.piece.type != PieceType::kPawn) {
+    ret += "=";
+    ret += PieceToFen({move.piece.type, Player::kWhite});
+  }
+  return ret;
+}
+
+Move StringToUci(const std::string& str, const Position& position) {
+  Move ret;
+  ret.from = StringToCoordinates(str);
+  ret.to = StringToCoordinates(str.substr(2));
+  if (str.size() == 6) {
+    ret.piece = FenToPiece(str[5]);
+  } else {
+    ret.piece = position.GetSquare(ret.from);
+  }
+  return ret;
+}
+
 }  // namespace chess_engine
