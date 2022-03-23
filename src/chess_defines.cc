@@ -37,6 +37,10 @@ bool operator==(Coordinates first, Coordinates second) {
   return first.file == second.file && first.rank == second.rank;
 }
 
+Coordinates operator+(Coordinates first, Coordinates second) {
+  return {first.file + second.file, first.rank + second.rank};
+}
+
 bool operator!=(Coordinates first, Coordinates second) {
   return !(first == second);
 }

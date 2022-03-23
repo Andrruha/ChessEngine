@@ -70,6 +70,8 @@ class Position {
   void GenerateStraightMoves(Coordinates original_square, Coordinates delta) const;
   void GeneratePawnPushes(Coordinates original_square) const;
   void GeneratePawnCaptures(Coordinates original_square, int8_t file_delta) const;
+  
+  void GenerateCastles() const;
 
   struct Attacks {
     int8_t by_white;
@@ -95,6 +97,7 @@ class Position {
   };
 
   Attacks GetAttacks(Coordinates square) const;
+  int8_t GetAttacksByPlayer(Coordinates square, Player player) const;
 
   // Returns AttackInfo for the delayed update
   AttackInfo UpdateAttacks (
