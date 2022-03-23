@@ -48,11 +48,23 @@ void Position::MakeMove(Move move) {
     SetSquare(taken, pieces::kNone);
     SetSquare(move.from, pieces::kNone);
     SetSquare(move.to, move.piece);
-    PassTheTurn();
-    return;
+    halfmove_clock_ = 0;
   }
-
-  // TODO(Andrey): Castling!
+  
+  if (move.piece.type == PieceType::kKing) {
+    if (move.to == move.from + Coordinates{2,0}) {
+      SetSquare(move.from, pieces::kNone);
+      SetSquare(move.from + Coordinates{3,0}, pieces::kNone);
+      SetSquare(move.to, {PieceType::kKing, to_move_});
+      SetSquare(move.to + Coordinates{-1,0}, {PieceType::kRook, to_move_});
+    }
+    if (move.to == move.from + Coordinates{-2,0}) {
+      SetSquare(move.from, pieces::kNone);
+      SetSquare(move.from + Coordinates{-4,0}, pieces::kNone);
+      SetSquare(move.to, {PieceType::kKing, to_move_});
+      SetSquare(move.to + Coordinates{1,0}, {PieceType::kRook, to_move_});
+    }
+  }
 
   // Checks and pins are updated inside the SetSquare function
   SetSquare(move.from, pieces::kNone);
@@ -204,8 +216,9 @@ void Position::SetCastlingRights(Player player, Castle castle, bool value) {
     } else if (castle == Castle::kQueenside){
       black_castle_queenside_ = value;
     }
+  } else {
+    assert(false);  // Invalid player or castling side
   }
-  assert(false);  // Invalid player or castling side
 }
 
   int16_t Position::GetMoveNumber() const {
@@ -229,6 +242,16 @@ Coordinates Position::GetEnPessant() const {
 
 void Position::SetEnPessant(Coordinates square) {
   en_pessant_ = square;
+}
+
+Coordinates Position::GetKing(Player player) const {
+  if (player == Player::kWhite) {
+    return white_king_;
+  } else if (player == Player::kBlack) {
+    return black_king_;
+  }
+  assert(false);  // Invalid player
+  return {-1,-1};
 }
 
 Position::AttackInfo Position::UpdateAttacks (
@@ -298,6 +321,9 @@ void Position::UpdateKnightAttacks(Coordinates square, Attacks delta) {
       continue;
     }
     attacks_[destination.file][destination.rank] += delta;
+    if (destination == GetKing(Opponent(to_move_))) {
+      check_segment_ = {square, square};
+    }
   }
 }
 
@@ -325,6 +351,10 @@ Coordinates destination = square;
     return;
   }
   attacks_[destination.file][destination.rank] += delta;
+
+  if (destination == GetKing(Opponent(to_move_))) {
+    check_segment_ = {square, square};
+  }
 }
 
 void Position::UpdateStraightAttacks (
@@ -335,7 +365,7 @@ void Position::UpdateStraightAttacks (
   AttackDirection(square, square, {0,1}, attack_delta.up, PieceType::kRook, block_delta, false);
   AttackDirection(square, square, {1,0}, attack_delta.right, PieceType::kRook, block_delta, false);
   AttackDirection(square, square, {0,-1}, attack_delta.down, PieceType::kRook, block_delta, false);
-  AttackDirection(square, square, {-1,-0}, attack_delta.left, PieceType::kRook, block_delta, false);
+  AttackDirection(square, square, {-1,0}, attack_delta.left, PieceType::kRook, block_delta, false);
 
   AttackDirection(square, square, {1,1}, attack_delta.up_right, PieceType::kBishop, block_delta, false);
   AttackDirection(square, square, {1,-1}, attack_delta.down_right, PieceType::kBishop, block_delta, false);
@@ -371,6 +401,16 @@ Position::Attacks Position::GetAttacks(Coordinates square) const {
   return attacks_[square.file][square.rank];
 }
 
+int8_t Position::GetAttacksByPlayer(Coordinates square, Player player) const {
+  if (player == Player::kWhite) {
+    return GetAttacks(square).by_white;
+  } else if (player == Player::kBlack) {
+    return GetAttacks(square).by_black;
+  }
+  assert(false);  // Invalid player
+  return 0;
+}
+
 int8_t Position::GetChecks(Player player) const {
   if (player == Player::kWhite) {
     return GetAttacks(white_king_).by_black;
@@ -385,6 +425,9 @@ void Position::GenerateMoves() const {
   if (halfmove_clock_ == 100) {
     return;
   }
+
+  GenerateCastles();
+
   for (int8_t file = 0; file < 8; ++file) {
     for (int8_t rank = 0; rank < 8; ++rank) {
       Piece piece = board_[file][rank];
@@ -399,7 +442,7 @@ void Position::GenerateMoves() const {
       bool vertical_free = !pins.horisontal && !pins.upward && !pins.downward;
       bool horisontal_free = !pins.vertical && !pins.upward && !pins.downward;
       bool upward_free = !pins.horisontal && !pins.vertical && !pins.downward;
-      bool downward_free = !pins.horisontal && !pins.upward && !pins.upward;
+      bool downward_free = !pins.horisontal && !pins.vertical && !pins.upward;
 
       int8_t dir = PawnDirection(to_move_);
 
@@ -624,6 +667,52 @@ void Position::GeneratePawnCaptures(Coordinates original_square, int8_t file_del
   }
 }
 
+void Position::GenerateCastles() const {
+  if (IsCheck()) {
+    return;
+  }
+  if (GetCastlingRights(to_move_, Castle::kKingside)) {
+    Coordinates king = GetKing(to_move_);
+    Coordinates current = king;
+    bool possible = true;
+    for (int8_t i = 0; i < 2; ++i) {
+      current += {1,0};
+      if (GetAttacksByPlayer(current, Opponent(to_move_))) {
+        possible = false;
+      }
+      if (GetSquare(current) != pieces::kNone) {
+        possible = false;
+      }
+    }
+    if (possible) {
+      PushLegalMove({king, current, {PieceType::kKing, to_move_}});
+    }
+  }
+  if (GetCastlingRights(to_move_, Castle::kQueenside)) {
+    Coordinates king = GetKing(to_move_);
+    Coordinates current = king;
+    bool possible = true;
+    for (int8_t i = 0; i < 2; ++i) {
+      current += {-1,0};
+      if (GetAttacksByPlayer(current, Opponent(to_move_))) {
+        possible = false;
+      }
+      if (GetSquare(current) != pieces::kNone) {
+        possible = false;
+      }
+    }
+    Coordinates extra = current;
+    extra += {-1, 0};
+    if (GetSquare(current) != pieces::kNone) {
+      possible = false;
+    }
+
+    if (possible) {
+      PushLegalMove({king, current, {PieceType::kKing, to_move_}});
+    }
+  }
+}
+
 // TODO(Andrey): Reduce code duplication!
 void Position::AttackDirection(
     Coordinates square,
@@ -767,7 +856,7 @@ void Position::PinDirection(Coordinates square, Player player, Coordinates delta
   while (WithinTheBoard(current)) {
     Piece current_piece = GetSquare(current);
     if (current_piece != pieces::kNone) {
-      if (current_piece.type == PieceType::kQueen || current_piece.type == attacker) {
+      if (current_piece.player != player && (current_piece.type == PieceType::kQueen || current_piece.type == attacker) ) {
         SetPin(block, player, delta, true);
       }
       break;

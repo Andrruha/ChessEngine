@@ -76,6 +76,7 @@ struct Coordinates {
 
 bool operator==(Coordinates first, Coordinates second);
 bool operator!=(Coordinates first, Coordinates second);
+Coordinates operator+(Coordinates first, Coordinates second);
 
 struct Segment {
   Coordinates start;
