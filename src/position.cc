@@ -81,25 +81,21 @@ void Position::MakeMove(Move move) {
     en_pessant_ = {-1,-1};
   }
 
-  // Update catsling rights
-  if (move.piece.type == PieceType::kRook) {
-    if (move.from.rank == 0) {
-      if (move.from.rank == 0) {
-        white_castle_queenside_ = false;
-      }
-      if (move.from.rank == 7) {
-        white_castle_kingside_ = false;
-      }
-    }
-    if (move.from.rank == 7) {
-      if (move.from.rank == 0) {
-        black_castle_queenside_ = false;
-      }
-      if (move.from.rank == 7) {
-        black_castle_kingside_ = false;
-      }
-    }
+  // Update castling rights
+  if (move.from == Coordinates{0,0} || move.to == Coordinates{0,0}) {
+    white_castle_queenside_ = false;
   }
+  if (move.from == Coordinates{7,0} || move.to == Coordinates{7,0}) {
+    white_castle_kingside_ = false;
+  }
+  if (move.from == Coordinates{0,7} || move.to == Coordinates{0,7}) {
+    black_castle_queenside_ = false;
+  }
+  if (move.from == Coordinates{7,7} || move.to == Coordinates{7,7}) {
+    black_castle_kingside_ = false;
+  }
+
+
   if (move.piece == pieces::kWhiteKing) {
     white_castle_kingside_ = false;
     white_castle_queenside_ = false;
@@ -179,7 +175,7 @@ void Position::SetSquare(Coordinates square, Piece piece) {
   if (old_piece == pieces::kNone && piece != pieces::kNone) {
     block_delta = -1;
   }
-  UpdateStraightAttacks(square, delayed_attacks, block_delta);
+  UpdateStraightAttacks(square, old_piece, delayed_attacks, block_delta);
 
   board_[square.file][square.rank] = piece;
 }
@@ -359,18 +355,19 @@ Coordinates destination = square;
 
 void Position::UpdateStraightAttacks (
   Coordinates square,
+  Piece moving_piece,
   AttackInfo attack_delta,
   int8_t block_delta
 ) {
-  AttackDirection(square, square, {0,1}, attack_delta.up, PieceType::kRook, block_delta, false);
-  AttackDirection(square, square, {1,0}, attack_delta.right, PieceType::kRook, block_delta, false);
-  AttackDirection(square, square, {0,-1}, attack_delta.down, PieceType::kRook, block_delta, false);
-  AttackDirection(square, square, {-1,0}, attack_delta.left, PieceType::kRook, block_delta, false);
-
-  AttackDirection(square, square, {1,1}, attack_delta.up_right, PieceType::kBishop, block_delta, false);
-  AttackDirection(square, square, {1,-1}, attack_delta.down_right, PieceType::kBishop, block_delta, false);
-  AttackDirection(square, square, {-1,-1}, attack_delta.down_left, PieceType::kBishop, block_delta, false);
-  AttackDirection(square, square, {-1,1}, attack_delta.up_left, PieceType::kBishop, block_delta, false);
+  AttackDirection(square, moving_piece, square, {0,1}, attack_delta.up, PieceType::kRook, block_delta, false);
+  AttackDirection(square, moving_piece, square, {1,0}, attack_delta.right, PieceType::kRook, block_delta, false);
+  AttackDirection(square, moving_piece, square, {0,-1}, attack_delta.down, PieceType::kRook, block_delta, false);
+  AttackDirection(square, moving_piece, square, {-1,0}, attack_delta.left, PieceType::kRook, block_delta, false);
+moving_piece, 
+  AttackDirection(square, moving_piece, square, {1,1}, attack_delta.up_right, PieceType::kBishop, block_delta, false);
+  AttackDirection(square, moving_piece, square, {1,-1}, attack_delta.down_right, PieceType::kBishop, block_delta, false);
+  AttackDirection(square, moving_piece, square, {-1,-1}, attack_delta.down_left, PieceType::kBishop, block_delta, false);
+  AttackDirection(square, moving_piece, square, {-1,1}, attack_delta.up_left, PieceType::kBishop, block_delta, false);
 }
 
 void Position::DeletePins(Player player) {
@@ -385,7 +382,6 @@ void Position::DeletePins(Player player) {
 
 void Position::RecalculatePins(Player player) {
   Coordinates square = ((player == Player::kWhite)?white_king_:black_king_);
-  std::array<std::array<Pins, 8>, 8>& pins = ((player == Player::kWhite)?pins_on_white_:pins_on_black_);
   PinDirection(square, player, {0,1}, PieceType::kRook);
   PinDirection(square, player, {1,0}, PieceType::kRook);
   PinDirection(square, player, {0,-1}, PieceType::kRook);
@@ -703,10 +699,9 @@ void Position::GenerateCastles() const {
     }
     Coordinates extra = current;
     extra += {-1, 0};
-    if (GetSquare(current) != pieces::kNone) {
+    if (GetSquare(extra) != pieces::kNone) {
       possible = false;
     }
-
     if (possible) {
       PushLegalMove({king, current, {PieceType::kKing, to_move_}});
     }
@@ -716,6 +711,7 @@ void Position::GenerateCastles() const {
 // TODO(Andrey): Reduce code duplication!
 void Position::AttackDirection(
     Coordinates square,
+    Piece moving_piece,
     Coordinates origin, 
     Coordinates delta,
     Attacks attack_delta,
@@ -724,6 +720,15 @@ void Position::AttackDirection(
     bool second_wave,
     Attacks pin_delta
 ) {
+  Attacks basic_white_attacks = {1,0};
+  Attacks basic_black_attacks = {0,1};
+  if (moving_piece == pieces::kWhiteKing) {
+    basic_black_attacks = {0,0};
+  }
+  if (moving_piece == pieces::kBlackKing) {
+    basic_white_attacks = {0,0};
+  }
+
   Coordinates current = square;
   current += delta;
   Attacks second_wave_attacks = {0, 0};
@@ -735,9 +740,9 @@ void Position::AttackDirection(
     if (blocking != pieces::kNone) {
       if (blocking.type == PieceType::kQueen || blocking.type == attacker) {
         if (blocking.player == Player::kWhite) {
-          second_wave_attacks = {1, 0};
+          second_wave_attacks = basic_white_attacks;
         } else if (blocking.player == Player::kBlack) {
-          second_wave_attacks = {0, 1};
+          second_wave_attacks = basic_black_attacks;
         } else {
           assert(false);  // Invalid player
         }
@@ -748,36 +753,40 @@ void Position::AttackDirection(
         if (blocking.player == Player::kWhite) {
           if (attack_delta.by_black == 1) {
             check_segment_ = {origin, current};
-            ghost_delta = {0,1};
+            ghost_delta = basic_black_attacks;
           }
-          if (second_wave && attack_delta.by_black == -1) {
-            SetPin(square, Player::kWhite, delta, true);
-            ghost_delta = {0,-1};
+          if (attack_delta.by_black == -1) {
+            if (second_wave) {
+              SetPin(square, Player::kWhite, delta, true);
+            }
+            ghost_delta = -basic_black_attacks;
           }
         } else if (blocking.player == Player::kBlack){
           if (attack_delta.by_white == 1) {
             check_segment_ = {origin, current};
-            ghost_delta = {1,0};
+            ghost_delta = basic_white_attacks;
           }
-          if (second_wave && attack_delta.by_white == -1) {
-            SetPin(square, Player::kBlack, delta, true);
-            ghost_delta = {-1,0};
+          if (attack_delta.by_white == -1) {
+            if (second_wave) {
+              SetPin(square, Player::kBlack, delta, true);
+            }
+            ghost_delta = -basic_white_attacks;
           }
         } else {
           assert(false);  // Invalid player
         }
         if (blocking.player == Player::kWhite) {
-          if (pin_delta.by_black == 1 && blocking.player == Player::kWhite) {
+          if (pin_delta.by_black == 1) {
             SetPin(origin, Player::kWhite, delta, true);
           }
-          if (pin_delta.by_black == -1 && blocking.player == Player::kWhite) {
+          if (pin_delta.by_black == -1) {
             SetPin(origin, Player::kWhite, delta, false);
           }
         } else if (blocking.player == Player::kBlack) {
-          if (pin_delta.by_white == 1 && blocking.player == Player::kBlack) {
+          if (pin_delta.by_white == 1) {
             SetPin(origin, Player::kBlack, delta, true);
           }
-          if (pin_delta.by_white == -1 && blocking.player == Player::kBlack) {
+          if (pin_delta.by_white == -1) {
             SetPin(origin, Player::kBlack, delta, false);
           }
         } else {
@@ -815,9 +824,9 @@ void Position::AttackDirection(
       }
       if (current_piece.type == PieceType::kQueen || current_piece.type == attacker) {
         if (current_piece.player == Player::kWhite) {
-          pin_delta = {1,0};
+          pin_delta = basic_white_attacks;
         } else if (current_piece.player == Player::kBlack) {
-          pin_delta = {0,1};
+          pin_delta = basic_black_attacks;
         } else {
           assert(false);  // Invalid player
         }
@@ -829,7 +838,7 @@ void Position::AttackDirection(
   second_wave_attacks *= block_delta;
   pin_delta *= block_delta;
   if (second_wave_attacks != Attacks{0,0} || pin_delta != Attacks{0,0}) {
-    AttackDirection(square, block, -delta, second_wave_attacks, attacker, 0, true, pin_delta);
+    AttackDirection(square, moving_piece, block, -delta, second_wave_attacks, attacker, 0, true, pin_delta);
   }
 }
 
@@ -838,7 +847,6 @@ void Position::PinDirection(Coordinates square, Player player, Coordinates delta
   current += delta;
   Attacks second_wave_attacks = {0, 0};
   Piece blocking;
-  std::array<std::array<Pins, 8>, 8>& pins = ((player == Player::kWhite)?pins_on_white_:pins_on_black_);
   while (WithinTheBoard(current)) {
     blocking = GetSquare(current);
     if (blocking != pieces::kNone) {
@@ -881,13 +889,13 @@ void Position::SetPin(Coordinates square, Player player, Coordinates delta, bool
                pins_on_white_[square.file][square.rank]:
                pins_on_black_[square.file][square.rank];
   if (delta == Coordinates{0,1} || delta == Coordinates{0,-1}) {
-    pins.vertical = value;
+    pins.vertical += (value ? 1 : -1);
   } else if (delta == Coordinates{1,0} || delta == Coordinates{-1,0}) {
-    pins.horisontal = value;
+    pins.horisontal += (value ? 1 : -1);
   } else if (delta == Coordinates{1,1} || delta == Coordinates{-1,-1}) {
-    pins.upward = value;
+    pins.upward += (value ? 1 : -1);
   } else if (delta == Coordinates{1,-1} || delta == Coordinates{-1,1}) {
-    pins.downward = value;
+    pins.downward += (value ? 1 : -1);
   }
 };
 

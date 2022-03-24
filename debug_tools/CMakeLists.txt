@@ -1,0 +1,2 @@
+add_executable(MoveGenDebugger main.cc)
+target_link_libraries(MoveGenDebugger EngineLibrary)
