@@ -53,10 +53,10 @@ class Position {
 
  private:
   struct Pins {
-    bool horisontal = false;
-    bool vertical = false;
-    bool upward = false;
-    bool downward = false;
+    int8_t horisontal = 0;
+    int8_t vertical = 0;
+    int8_t upward = 0;
+    int8_t downward = 0;
   };
 
   Pins GetPins(Coordinates square, Player player) const;
@@ -113,6 +113,7 @@ class Position {
   // Returns AttackInfo for the second wave
   void UpdateStraightAttacks (
     Coordinates square,
+    Piece moving_piece,
     AttackInfo attack_delta,
     int8_t block_delta
   );
@@ -125,6 +126,7 @@ class Position {
   // 'attacker' is a piece that attacks in a give directions besides the queen.
   void AttackDirection(
     Coordinates square,
+    Piece moveig_piece,
     Coordinates origin, 
     Coordinates delta,
     Attacks attack_delta,
