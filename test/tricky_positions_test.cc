@@ -80,7 +80,7 @@ TEST_CASE("Move count is correct in tricky positions", "[position]") {
     REQUIRE(chess_engine::CountMoves(pos,1) == 47);
     REQUIRE(chess_engine::CountMoves(pos,2) == 1663);
     REQUIRE(chess_engine::CountMoves(pos,3) == 75380);
-    REQUIRE(chess_engine::CountMoves(pos,4) == 2751108);
-    REQUIRE(chess_engine::CountMoves(pos,5) == 120423132);
+    REQUIRE(chess_engine::CountMoves(pos,4) == 2751008);
+    REQUIRE(chess_engine::CountMoves(pos,5) == 120413132);
   }
 }

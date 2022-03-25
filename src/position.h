@@ -50,7 +50,6 @@ class Position {
 
   // The amount of checks on player is in (only 0, 1 or 2 are possible)
   int8_t GetChecks(Player player) const;
-
  private:
   struct Pins {
     int8_t horisontal = 0;
@@ -92,7 +91,13 @@ class Position {
     Attacks down_left = {0,0};
     Attacks left = {0,0};
     Attacks up_left = {0,0};
+    
+    void SetByDelta(Coordinates delta, Attacks value);
+
+    void MultiplyPlayerAttacks(Player player, int8_t factor);
+
     AttackInfo& operator+=(AttackInfo other);
+    AttackInfo& operator*=(int8_t other);
     AttackInfo operator-();
   };
 
@@ -113,35 +118,21 @@ class Position {
   // Returns AttackInfo for the second wave
   void UpdateStraightAttacks (
     Coordinates square,
-    Piece moving_piece,
     AttackInfo attack_delta,
-    int8_t block_delta
+    AttackInfo checking_square_delta
   );
 
-  void DeletePins(Player player);
-  void RecalculatePins(Player player);
-
+  void UpdateCheckSegment();
   // Add/remove attacks and pins in a given direction 
   // 'attack_delta' says if we should add or remove attacks.
   // 'attacker' is a piece that attacks in a give directions besides the queen.
   void AttackDirection(
     Coordinates square,
-    Piece moveig_piece,
-    Coordinates origin, 
     Coordinates delta,
     Attacks attack_delta,
-    PieceType attacker,
-    int8_t block_delta,
-    bool second_wave,
-    Attacks pin_delta = {0,0}
+    Attacks checking_square_delta
   );
 
-  void PinDirection(
-    Coordinates square,
-    Player player,
-    Coordinates delta,
-    PieceType attacker
-  );
   // Do some (not all) legality checks and push the move to leagal_moves_
   void PushLegalMove(Move move) const;
 
@@ -160,9 +151,9 @@ class Position {
   Segment check_segment_ = {{-1,-1},{-1,-1}};
 
   std::array<std::array<Piece,8>, 8> board_ = {};
-  std::array<std::array<Pins, 8>, 8> pins_on_white_ = {};
-  std::array<std::array<Pins, 8>, 8> pins_on_black_ = {};
-  std::array<std::array<Attacks, 8>, 8> attacks_ = {};
+  std::array<std::array<Attacks, 8>, 8> attacks_ = {};  // total attacks on a square
+  std::array<std::array<AttackInfo, 8>, 8> directed_attacks_ = {};  // for pin calculation
+  std::array<std::array<AttackInfo, 8>, 8> checking_squares_ = {};  // where queen, bishops or rooks can check from
 
   mutable bool moves_generated_ = false;
   mutable std::vector<Move> legal_moves_;
