@@ -59,13 +59,22 @@ uint64_t ZobristHashFunction::HashTurn() const {
   return turn_;
 }
 
-ZobristHash::ZobristHash(const ZobristHashFunction& func):func_(func){};
+ZobristHash::ZobristHash(const ZobristHashFunction& func):
+func_(func)
+{};
+
+ZobristHash::ZobristHash(const ZobristHash& other)
+:func_(other.func_), hash_(other.hash_)
+{}
 
 void ZobristHash::ToggleSquare(Coordinates square, Piece piece) {
   hash_ ^= func_.HashPiece(square, piece);
 }
 
 void ZobristHash::ToggleEnPessant(Coordinates square) {
+  if (square == Coordinates{-1,-1}) {
+    return;
+  }
   hash_ ^= func_.HashEnPessant(square);
 }
 

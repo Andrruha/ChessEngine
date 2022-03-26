@@ -10,7 +10,7 @@ namespace chess_engine {
 
 class ZobristHashFunction {
  public:
-	ZobristHashFunction(uint64_t seed);
+	explicit ZobristHashFunction(uint64_t seed);
 	uint64_t HashPiece(Coordinates square, Piece piece) const;
 	uint64_t HashEnPessant(Coordinates square) const;
 	uint64_t HashCastles(Player player, Castle castle) const;
@@ -29,7 +29,9 @@ class ZobristHashFunction {
 
 class ZobristHash{
  public:
-  ZobristHash(const ZobristHashFunction& func);
+  explicit ZobristHash(const ZobristHashFunction& func);
+  ZobristHash(const ZobristHash& other);
+
 	uint64_t Get() const;
 	void ToggleSquare(Coordinates square, Piece piece);
 	void ToggleEnPessant(Coordinates square);
