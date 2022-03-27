@@ -52,6 +52,7 @@ void Position::MakeMove(Move move) {
     halfmove_clock_ = 0;
   }
   
+  // Castling
   if (move.piece.type == PieceType::kKing) {
     if (move.to == move.from + Coordinates{2,0}) {
       SetSquare(move.from, pieces::kNone);
@@ -76,34 +77,35 @@ void Position::MakeMove(Move move) {
     move.piece.type == PieceType::kPawn && 
     move.to.rank - move.from.rank == dir*2
   ) {
-    en_pessant_ = move.from;
-    en_pessant_.rank += dir;
+    Coordinates new_en_pessant = move.from;
+    new_en_pessant.rank += dir;
+    SetEnPessant(new_en_pessant);
   } else {
-    en_pessant_ = {-1,-1};
+    SetEnPessant({-1,-1});
   }
 
   // Update castling rights
   if (move.from == Coordinates{0,0} || move.to == Coordinates{0,0}) {
-    white_castle_queenside_ = false;
+    SetCastlingRights(Player::kWhite, Castle::kQueenside, false);
   }
   if (move.from == Coordinates{7,0} || move.to == Coordinates{7,0}) {
-    white_castle_kingside_ = false;
+    SetCastlingRights(Player::kWhite, Castle::kKingside, false);
   }
   if (move.from == Coordinates{0,7} || move.to == Coordinates{0,7}) {
-    black_castle_queenside_ = false;
+    SetCastlingRights(Player::kBlack, Castle::kQueenside, false);
   }
   if (move.from == Coordinates{7,7} || move.to == Coordinates{7,7}) {
-    black_castle_kingside_ = false;
+    SetCastlingRights(Player::kBlack, Castle::kKingside, false);
   }
 
 
   if (move.piece == pieces::kWhiteKing) {
-    white_castle_kingside_ = false;
-    white_castle_queenside_ = false;
+    SetCastlingRights(Player::kWhite, Castle::kQueenside, false);
+    SetCastlingRights(Player::kWhite, Castle::kKingside, false);
   }
   if (move.piece == pieces::kBlackKing) {
-    black_castle_kingside_ = false;
-    black_castle_queenside_ = false;
+    SetCastlingRights(Player::kBlack, Castle::kQueenside, false);
+    SetCastlingRights(Player::kBlack, Castle::kKingside, false);
   }
 
   if (GetSquare(move.from).type == PieceType::kPawn) {
@@ -721,7 +723,6 @@ void Position::GenerateCastles() const {
   }
 }
 
-// TODO(Andrey): Reduce code duplication!
 void Position::AttackDirection(
   Coordinates square,
   Coordinates delta,
