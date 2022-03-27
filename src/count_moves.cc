@@ -7,8 +7,6 @@
 #include "position_table.h"
 #include "zobrist_hash.h"
 
-#include <iostream>
-
 namespace chess_engine {
 
 int64_t CountMoves(const Position& position, int depth) {
