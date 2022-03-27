@@ -6,6 +6,14 @@
 
 namespace chess_engine {
 
+Node::Node(const ZobristHashFunction& hash_func):
+  hash_(hash_func)
+{}
+
+Node::Node(const Position& position, const ZobristHashFunction& func):
+  position_(position), hash_(position, func) 
+{}
+
 bool Node::IsCheck() const {
   return position_.IsCheck();
 }
@@ -69,25 +77,26 @@ void Node::HashMove(ZobristHash& hash, Move move) const {
       hash.ToggleSquare(move.from + Coordinates{3,0}, {PieceType::kRook, to_move});
       hash.ToggleSquare(move.to, {PieceType::kKing, to_move});
       hash.ToggleSquare(move.to + Coordinates{-1,0}, {PieceType::kRook, to_move});
+      normal_move = false;
     }
     if (move.to == move.from + Coordinates{-2,0}) {
       hash.ToggleSquare(move.from, {PieceType::kKing, to_move});
       hash.ToggleSquare(move.from + Coordinates{-4,0}, {PieceType::kRook, to_move});
       hash.ToggleSquare(move.to, {PieceType::kKing, to_move});
       hash.ToggleSquare(move.to + Coordinates{1,0}, {PieceType::kRook, to_move});
+      normal_move = false;
     }
-    normal_move = false;
   }
 
-  Piece taken = position_.GetSquare(move.to);
-
-  hash.ToggleSquare(move.from, move.piece);
-  hash.ToggleSquare(move.to, taken);
-  hash.ToggleSquare(move.to, move.piece);
+  if (normal_move) {
+    Piece taken = position_.GetSquare(move.to);
+    hash.ToggleSquare(move.from, move.piece);
+    hash.ToggleSquare(move.to, taken);
+    hash.ToggleSquare(move.to, move.piece);
+  }
 
   // Update en-pessant
   hash.ToggleEnPessant(en_pessant);
-
   if (
     move.piece.type == PieceType::kPawn && 
     move.to.rank - move.from.rank == dir*2
@@ -207,6 +216,10 @@ void Node::SetHalfmoveClock(int16_t value) {
 
 ZobristHash Node::GetHash() const {
   return hash_;
+}
+
+const Position& Node::GetPosition() const {
+  return position_;
 }
 
 }

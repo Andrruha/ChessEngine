@@ -10,7 +10,8 @@ namespace chess_engine {
 // Represents a node in the search tree. Has mostly position functionality, but also handles hash
 class Node {
  public:
-  Node(const ZobristHashFunction& hash_func_);
+  explicit Node(const ZobristHashFunction& hash_func);
+  Node(const Position& position, const ZobristHashFunction& func);
 
   bool IsCheck() const;
   bool IsCheckmate() const;
@@ -49,6 +50,7 @@ class Node {
   void SetHalfmoveClock(int16_t value);
 
   ZobristHash GetHash() const;
+  const Position& GetPosition() const;
  private:
   ZobristHash hash_;
   Position position_;
