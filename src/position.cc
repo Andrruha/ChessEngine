@@ -723,7 +723,6 @@ void Position::GenerateCastles() const {
   }
 }
 
-// TODO(Andrey): Reduce code duplication!
 void Position::AttackDirection(
   Coordinates square,
   Coordinates delta,
