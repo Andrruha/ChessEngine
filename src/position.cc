@@ -40,6 +40,11 @@ void Position::SetPlayerToMove(Player player) {
 
 void Position::MakeMove(Move move) {
   check_segment_ = {{-1,-1},{-1,-1}};  // If move is legal it deals with all checks
+  if (GetSquare(move.from).type == PieceType::kPawn || GetSquare(move.to) != pieces::kNone) {
+    halfmove_clock_ = 0;
+  } else {
+    ++halfmove_clock_;
+  }
 
   // En pessant
   int8_t dir = PawnDirection(to_move_);
@@ -106,12 +111,6 @@ void Position::MakeMove(Move move) {
   if (move.piece == pieces::kBlackKing) {
     SetCastlingRights(Player::kBlack, Castle::kQueenside, false);
     SetCastlingRights(Player::kBlack, Castle::kKingside, false);
-  }
-
-  if (GetSquare(move.from).type == PieceType::kPawn) {
-    halfmove_clock_ = 0;
-  } else {
-    ++halfmove_clock_;
   }
 
   PassTheTurn();
