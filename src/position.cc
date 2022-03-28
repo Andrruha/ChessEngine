@@ -129,6 +129,49 @@ bool Position::MoveIsLegal(Move move) const {
   // TODO(Andrey): Implement
 }
 
+bool Position::MoveIsCheckFast(Move move) const {
+  Pins pins = GetPins(move.from, Opponent(to_move_));
+  bool pin = pins.vertical || pins.upward || pins.horisontal || pins.downward;
+  AttackInfo check_info = checking_squares_[move.to.file][move.to.rank];
+
+  int8_t Attacks::* by_our_king = to_move_==Player::kWhite ? &Attacks::by_white : & Attacks::by_black; 
+  bool rook_check = 
+  check_info.up.*by_our_king || check_info.right.*by_our_king ||
+  check_info.down.*by_our_king || check_info.left.*by_our_king;
+  bool bishop_check = 
+  check_info.up_right.*by_our_king || check_info.down_right.*by_our_king ||
+  check_info.down_left.*by_our_king || check_info.up_left.*by_our_king;
+  Coordinates king = GetKing(Opponent(to_move_));
+
+  // TODO(Andrey): King discoveries!
+  switch (move.piece.type) {
+    case (PieceType::kPawn): 
+      int8_t dir = PawnDirection(to_move_);
+      if (move.to + Coordinates{1,dir} == king || move.to + Coordinates{-1,dir} == king) {
+        return true;
+      }
+      if (move.to == move.from + Coordinates{0, dir} && (pins.upward || pins.horisontal || pins.downward)) {
+        return true;
+      }
+      return false;
+      //  We assume promotions always happen on the back rank
+    break;
+    case (PieceType::kRook):
+      return pin || rook_check;
+    break;
+    case (PieceType::kKnight):
+      return pin || KnightMoveAway(move.to, king);
+    break;
+    case (PieceType::kBishop):
+      return pin || bishop_check;
+    break;
+    case (PieceType::kQueen):
+      return pin || rook_check || bishop_check;
+    break;
+  }
+  return false;
+}
+
 Piece Position::GetSquare(Coordinates square) const {
   return board_[square.file][square.rank];
 }

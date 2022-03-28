@@ -25,6 +25,9 @@ class Position {
 
   std::vector<Move> GetLegalMoves() const;
   bool MoveIsLegal(Move move) const;
+  // If function returns true then move is definitely a check
+  // If checking move is castling or a capture might return false
+  bool MoveIsCheckFast(Move move) const;
 
   // doesn't check for the move legality
   void MakeMove(Move move);
