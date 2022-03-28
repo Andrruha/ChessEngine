@@ -42,6 +42,7 @@ class Node {
 
   Coordinates GetKing(Player player) const;
   int8_t GetChecks(Player player) const;
+  int8_t GetAttacksByPlayer(Coordinates square, Player player) const;
 
   int16_t GetMoveNumber() const;
   void SetMoveNumber(int16_t value);

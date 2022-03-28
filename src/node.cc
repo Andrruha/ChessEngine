@@ -198,6 +198,10 @@ int8_t Node::GetChecks(Player player) const {
   return position_.GetChecks(player);
 }
 
+int8_t Node::GetAttacksByPlayer(Coordinates square, Player player) const {
+  return position_.GetAttacksByPlayer(square, player);
+}
+
 int16_t Node::GetMoveNumber() const {
   return position_.GetMoveNumber();
 }

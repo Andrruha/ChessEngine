@@ -50,6 +50,7 @@ class Position {
 
   // The amount of checks on player is in (only 0, 1 or 2 are possible)
   int8_t GetChecks(Player player) const;
+  int8_t GetAttacksByPlayer(Coordinates square, Player player) const;
  private:
   struct Pins {
     int8_t horisontal = 0;
@@ -102,7 +103,6 @@ class Position {
   };
 
   Attacks GetAttacks(Coordinates square) const;
-  int8_t GetAttacksByPlayer(Coordinates square, Player player) const;
 
   // Returns AttackInfo for the delayed update
   AttackInfo UpdateAttacks (
