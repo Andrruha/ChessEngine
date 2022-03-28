@@ -20,6 +20,10 @@ class Engine {
   const Position& GetPosition() const;
 
   static int32_t SimpleEvaluate(const Node& node);
+
+  static int32_t GetHighestEval();
+  static int32_t GetLowestEval();
+  static int32_t GetLongestCheckmate();
  private:
    struct NodeInfo {
     int16_t depth = -1;
@@ -29,18 +33,19 @@ class Engine {
   NodeInfo RunSearch(
     int16_t depth,
     const Node& root,
-    int32_t alpha = lowest_eval,
-    int32_t beta = highest_eval
+    int32_t alpha = lowest_eval_,
+    int32_t beta = highest_eval_
   );
-  
+  void SortMoves(std::vector<Move>& moves, const Position& position);
+
   Node root_;
   NodeInfo root_info_;
 
   PositionTable<NodeInfo, 24> transposition_table;
 
-  static const int32_t lowest_eval = -2000000000;
-  static const int32_t highest_eval = 2000000000;
-  static const int32_t longest_checkmate = 1000;
+  static const int32_t lowest_eval_ = -2000000000;
+  static const int32_t highest_eval_ = 2000000000;
+  static const int32_t longest_checkmate_ = 1000;
 };
 
 }  // namespace chess_engine

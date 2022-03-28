@@ -42,6 +42,10 @@ void Node::PassTheTurn() {
   hash_.PassTheTurn();
 }
 
+bool Node::MoveIsCheckFast(Move move) const {
+  return position_.MoveIsCheckFast(move);
+}
+
 std::vector<Move> Node::GetLegalMoves() const {
   return position_.GetLegalMoves();
 }

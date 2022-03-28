@@ -1,5 +1,6 @@
 #include "engine.h"
 
+#include <algorithm>
 #include <iostream>
 
 #include "fen.h"
@@ -46,9 +47,35 @@ namespace chess_engine {
     return ret;
   }
 
+  int32_t Engine::GetLowestEval() {
+    return lowest_eval_;
+  }
+  int32_t Engine::GetHighestEval() {
+    return highest_eval_;
+  }
+  int32_t Engine::GetLongestCheckmate() {
+    return longest_checkmate_;
+  }
+
+  void Engine::SortMoves(std::vector<Move>& moves, const Position& position) {
+    int insert_index = 0;
+    for (int read_index = 0; read_index < static_cast<int>(moves.size()); ++read_index) {
+      if (position.MoveIsCheckFast(moves[read_index])) {
+        std::swap(moves[insert_index], moves[read_index]);
+        ++insert_index;
+      }
+    }
+    for (int read_index = insert_index; read_index < static_cast<int>(moves.size()); ++read_index) {
+      if (position.GetSquare(moves[read_index].to) != pieces::kNone) {
+        std::swap(moves[insert_index], moves[read_index]);
+        ++insert_index;
+      }
+    }
+  }
+
   Engine::NodeInfo Engine::RunSearch(int16_t depth, const Node& node, int32_t alpha, int32_t beta) {
     if (node.IsCheckmate()) {
-      return {depth, lowest_eval, {{-1,-1}, {-1,-1}, pieces::kNone}};
+      return {depth, lowest_eval_, {{-1,-1}, {-1,-1}, pieces::kNone}};
     }
     if (node.IsStalemate()) {
       return {depth, 0, {{-1,-1}, {-1,-1}, pieces::kNone}};
@@ -61,21 +88,21 @@ namespace chess_engine {
       return {0, SimpleEvaluate(node), {{-1,-1}, {-1,-1}, pieces::kNone}};
     }
     std::vector<Move> legal_moves = node.GetLegalMoves();
-    int32_t eval = lowest_eval;
+    SortMoves(legal_moves, node.GetPosition());
+    int32_t eval = lowest_eval_;
     Move best_move = legal_moves[0];
     for (Move move:legal_moves) {
       NodeInfo child = transposition_table.Get(node.HashAfterMove(move).Get());
       if (child.depth < depth-10) {
-        Node new_node = node;
-        new_node.MakeMove(move);
         int16_t cost = 10;
-        if (node.IsCheck()) {
-          cost = 2;
-        } else if (new_node.IsCheck()) {
-          cost = 2;
+        if (node.IsCheck() || node.MoveIsCheckFast(move)) {
+          cost = 5;
         } else if (node.GetSquare(move.to) != pieces::kNone) {
           cost = 5;
         }
+        Node new_node = node;
+        new_node.MakeMove(move);
+        // TODO(Andrey): Simple evaluation after move?
         child = RunSearch(depth-cost, new_node, -beta, -alpha);
       }
       if (-child.eval > eval) {
@@ -91,7 +118,7 @@ namespace chess_engine {
       }
     }
     transposition_table.Set(node.GetHash().Get(), {depth, eval, best_move});
-    if (eval < lowest_eval + longest_checkmate) {
+    if (eval < lowest_eval_ + longest_checkmate_) {
       ++eval;
     }
     return {depth, eval, best_move};

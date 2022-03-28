@@ -22,6 +22,7 @@ class Node {
   void SetPlayerToMove(Player player);
   void PassTheTurn();
 
+  bool MoveIsCheckFast(Move move) const;
   std::vector<Move> GetLegalMoves() const;
   void MakeMove(Move move);
 
