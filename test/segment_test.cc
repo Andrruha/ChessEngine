@@ -56,7 +56,7 @@ chess_engine::Segment RandomSegment(std::mt19937& generator) {
 }
 
 TEST_CASE("BelongsToSegment function works", "[defines]") {
-  std::mt19937 mt(12345);
+  std::mt19937 mt(3141592653ul);
   chess_engine::Segment segment = {{2,5},{2,2}};
   chess_engine::Coordinates point = {2,5};
   bool efficient = BelongsToSegment(segment, point);

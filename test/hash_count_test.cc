@@ -7,7 +7,7 @@
 #include "zobrist_hash.h"
 
 TEST_CASE("Move count with hash is correct in tricky positions", "[position][hash]") {
-  chess_engine::ZobristHashFunction func(346400ull);
+  chess_engine::ZobristHashFunction func(14159265358979323846ull);
   {
     chess_engine::Position pos = chess_engine::FenToPosition(
       "rnbqkb1r/pppp1ppp/8/4p3/8/5N2/PPPPBnPP/RNBQ1RK1 w kq - 8 5"
