@@ -51,11 +51,14 @@ class Node {
   int16_t GetHalfmoveClock() const;
   void SetHalfmoveClock(int16_t value);
 
+  Coordinates GetLastCapture() const;
+
   ZobristHash GetHash() const;
   const Position& GetPosition() const;
  private:
   ZobristHash hash_;
   Position position_;
+  Coordinates last_capture_ = {-1,-1};
 };
 
 }

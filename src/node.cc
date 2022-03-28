@@ -52,6 +52,11 @@ std::vector<Move> Node::GetLegalMoves() const {
 
 void Node::MakeMove(Move move) {
   HashMove(hash_, move);
+  if (position_.GetSquare(move.to) != pieces::kNone) {
+    last_capture_ = move.to;
+  } else {
+    last_capture_ = {-1,-1};
+  }
   position_.MakeMove(move);
 }
 
@@ -220,6 +225,10 @@ int16_t Node::GetHalfmoveClock() const {
 
 void Node::SetHalfmoveClock(int16_t value) {
   position_.SetHalfmoveClock(value);
+}
+
+Coordinates Node::GetLastCapture() const {
+  return last_capture_;
 }
 
 ZobristHash Node::GetHash() const {

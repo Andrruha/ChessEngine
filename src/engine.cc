@@ -93,13 +93,15 @@ namespace chess_engine {
     Move best_move = legal_moves[0];
     for (Move move:legal_moves) {
       NodeInfo child = transposition_table.Get(node.HashAfterMove(move).Get());
-      if (child.depth < depth-10) {
-        int16_t cost = 10;
-        if (node.IsCheck() || node.MoveIsCheckFast(move)) {
-          cost = 5;
-        } else if (node.GetSquare(move.to) != pieces::kNone) {
-          cost = 5;
-        }
+      int16_t cost = 10;
+      if (move.to == node.GetLastCapture()) {
+        cost = 0;
+      } else if (node.IsCheck() || node.MoveIsCheckFast(move)) {
+        cost = 5;
+      } else if (node.GetSquare(move.to) != pieces::kNone) {
+        cost = 5;
+      }
+      if (child.depth < depth-cost) {
         Node new_node = node;
         new_node.MakeMove(move);
         // TODO(Andrey): Simple evaluation after move?
