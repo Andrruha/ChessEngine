@@ -134,19 +134,19 @@ bool Position::MoveIsCheckFast(Move move) const {
   bool pin = pins.vertical || pins.upward || pins.horisontal || pins.downward;
   AttackInfo check_info = checking_squares_[move.to.file][move.to.rank];
 
-  int8_t Attacks::* by_our_king = to_move_==Player::kWhite ? &Attacks::by_white : & Attacks::by_black; 
+  int8_t Attacks::* by_king = to_move_==Player::kWhite ? &Attacks::by_black : & Attacks::by_white; 
   bool rook_check = 
-  check_info.up.*by_our_king || check_info.right.*by_our_king ||
-  check_info.down.*by_our_king || check_info.left.*by_our_king;
+  check_info.up.*by_king || check_info.right.*by_king ||
+  check_info.down.*by_king || check_info.left.*by_king;
   bool bishop_check = 
-  check_info.up_right.*by_our_king || check_info.down_right.*by_our_king ||
-  check_info.down_left.*by_our_king || check_info.up_left.*by_our_king;
+  check_info.up_right.*by_king || check_info.down_right.*by_king ||
+  check_info.down_left.*by_king || check_info.up_left.*by_king;
   Coordinates king = GetKing(Opponent(to_move_));
 
   // TODO(Andrey): King discoveries!
+  int8_t dir = PawnDirection(to_move_);
   switch (move.piece.type) {
     case (PieceType::kPawn): 
-      int8_t dir = PawnDirection(to_move_);
       if (move.to + Coordinates{1,dir} == king || move.to + Coordinates{-1,dir} == king) {
         return true;
       }
@@ -154,7 +154,7 @@ bool Position::MoveIsCheckFast(Move move) const {
         return true;
       }
       return false;
-      //  We assume promotions always happen on the back rank
+      // We assume promotions always happen on the back rank
     break;
     case (PieceType::kRook):
       return pin || rook_check;
