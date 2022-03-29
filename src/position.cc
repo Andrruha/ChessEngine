@@ -26,6 +26,7 @@ Player Position::PlayerToMove() const {
 
 void Position::SetPlayerToMove(Player player) {
   to_move_ = player;
+  moves_generated_ = false;
 }
 
  void Position::PassTheTurn() {
@@ -120,6 +121,7 @@ std::vector<Move> Position::GetLegalMoves() const {
   if (!moves_generated_) {
     legal_moves_.clear();
     GenerateMoves();
+    moves_generated_ = true;
   }
   return legal_moves_;
 }
@@ -259,6 +261,8 @@ void Position::SetSquare(Coordinates square, Piece piece) {
   UpdateStraightAttacks(square, directed_attacks, checking_squares);
 
   board_[square.file][square.rank] = piece;
+
+  moves_generated_ = false;
 }
 
 
@@ -296,6 +300,7 @@ void Position::SetCastlingRights(Player player, Castle castle, bool value) {
   } else {
     assert(false);  // Invalid player or castling side
   }
+  moves_generated_ = false;
 }
 
   int16_t Position::GetMoveNumber() const {
@@ -311,6 +316,7 @@ void Position::SetCastlingRights(Player player, Castle castle, bool value) {
   }
   void Position::SetHalfmoveClock(int16_t value) {
     halfmove_clock_ = value;
+    moves_generated_ = false;
   }
 
 Coordinates Position::GetEnPessant() const {
@@ -319,6 +325,7 @@ Coordinates Position::GetEnPessant() const {
 
 void Position::SetEnPessant(Coordinates square) {
   en_pessant_ = square;
+  moves_generated_ = false;
 }
 
 Coordinates Position::GetKing(Player player) const {
