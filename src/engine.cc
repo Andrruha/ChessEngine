@@ -107,7 +107,7 @@ namespace chess_engine {
     if (node.IsStalemate()) {
       return {depth, 0, {{-1,-1}, {-1,-1}, pieces::kNone}};
     }
-    if (depth < 10) {
+    if (!depth) {
       return {0, SimpleEvaluate(node), {{-1,-1}, {-1,-1}, pieces::kNone}};
     }
 
@@ -134,26 +134,18 @@ namespace chess_engine {
         continue;
       }
       NodeInfo child = transposition_table_.Get(new_hash.Get());
-      int16_t cost = 10;
-      if (move.to == node.GetLastCapture()) {
-        cost = 0;
-      } else if (node.IsCheck() || node.MoveIsCheckFast(move)) {
-        cost = 5;
-      } else if (node.GetSquare(move.to) != pieces::kNone) {
-        cost = 5;
-      }
-      if (child.depth < depth-cost) {
+      if (child.depth < depth-1) {
         Node new_node = node;
         new_node.MakeMove(move);
 
         // TODO(Andrey): Simple evaluation after move?
-        child = RunSearch(depth-cost, new_node, -beta, -alpha);
+        child = RunSearch(depth-1, new_node, -beta, -alpha);
       }
       if (-child.eval > eval) {
         eval = -child.eval;
         best_move = move;
-        if (eval > beta) {
-          // TODO(Andrey): Transposition table?
+        if (eval >= beta) {
+          // Node is a cut node
           no_return_table_.Set(node.GetHash().Get(), false);
           if (eval > highest_eval_ - longest_checkmate_) {
             --eval;
@@ -161,6 +153,7 @@ namespace chess_engine {
           return {depth, eval, best_move};
         }
         if (eval > alpha) {
+          // Node is a PV node
           alpha = eval;
         }
       }
