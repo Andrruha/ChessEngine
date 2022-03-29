@@ -78,6 +78,10 @@ namespace chess_engine {
     return principal_variation_;
   }
 
+  void Engine::UseTranspositionTable(bool value) {
+    use_transposition_table_ = value;
+  }
+
   int32_t Engine::GetLowestEval() {
     return lowest_eval_;
   }
@@ -113,28 +117,35 @@ namespace chess_engine {
     int32_t alpha,
     int32_t beta
   ) {
+    NodeInfo ret;
     if (node.IsCheckmate()) {
-      return {depth, lowest_eval_, {{-1,-1}, {-1,-1}, pieces::kNone}};
+      ret = {depth, NodeType::kPV, lowest_eval_, {{-1,-1}, {-1,-1}, pieces::kNone}};
     }
     if (node.IsStalemate()) {
-      return {depth, 0, {{-1,-1}, {-1,-1}, pieces::kNone}};
+      ret = {depth, NodeType::kPV, 0, {{-1,-1}, {-1,-1}, pieces::kNone}};
     }
     if (!depth) {
-      return {0, SimpleEvaluate(node), {{-1,-1}, {-1,-1}, pieces::kNone}};
+      ret =  {0, NodeType::kPV, SimpleEvaluate(node), {{-1,-1}, {-1,-1}, pieces::kNone}};
     }
-
+    if (use_transposition_table_) {
+      transposition_table_.Set(node.GetHash().Get(), ret);
+    }
+    if (ret.depth >= 0) {
+      return ret;
+    }
     no_return_table_.Set(node.GetHash().Get(), true);
 
     std::vector<Move> legal_moves = node.GetLegalMoves();
     SortMoves(legal_moves, node.GetPosition());
     Move best_move = legal_moves[0];
+    NodeType type = NodeType::kFailLow;
     std::list<Move> principal_variation;  // best line in the currently analysed child
 
     for (Move move:legal_moves) {
       ZobristHash new_hash = node.HashAfterMove(move);
       NodeInfo child;
       if (no_return_table_.Get(new_hash.Get())) {
-        child = {depth, 0, {{-1,-1},{-1,-1}, pieces::kNone}};
+        child = {depth, NodeType::kPV, 0, {{-1,-1},{-1,-1}, pieces::kNone}};
       } else {
         child = transposition_table_.Get(new_hash.Get());
         if (child.depth < depth-1) {
@@ -143,8 +154,19 @@ namespace chess_engine {
           child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
         }
       }
+      if (child.type == NodeType::kFailHigh) {
+        if (-child.eval <= alpha) {
+          // Either we have found a good TT entry,
+          // or node was just beta-prunned during a recursive call 
+          continue;
+        }
+        Node new_node = node;
+        new_node.MakeMove(move);
+        child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
+      }
       if (-child.eval > alpha) {
         // Node is either a cut node or a PV node
+        type = NodeType::kPV;
         alpha = -child.eval;
         best_move = move;
         parent_variation = principal_variation;
@@ -152,6 +174,7 @@ namespace chess_engine {
       }
       if (alpha >= beta) {
         // Node is a cut node
+        type = NodeType::kFailHigh;
         no_return_table_.Set(node.GetHash().Get(), false);
         break;
       }
@@ -160,6 +183,10 @@ namespace chess_engine {
       --alpha;
     }
     no_return_table_.Set(node.GetHash().Get(), false);
-    return {depth, alpha, best_move};
+    ret = {depth, type, alpha, best_move};
+    if (use_transposition_table_) {
+      transposition_table_.Set(node.GetHash().Get(), ret);
+    }
+    return ret;
   }
 }  // namespace chess_engine
