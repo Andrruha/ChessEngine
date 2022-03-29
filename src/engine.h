@@ -1,6 +1,7 @@
 #ifndef CHEES_ENGINE_SRC_ENGINE_
 #define CHESS_ENGINE_SRC_ENGINE_
 
+#include <array>
 #include <limits>
 
 #include "chess_defines.h"
@@ -19,7 +20,7 @@ class Engine {
 
   const Position& GetPosition() const;
 
-  static int32_t SimpleEvaluate(const Node& node);
+  int32_t SimpleEvaluate(const Node& node);
 
   static int32_t GetHighestEval();
   static int32_t GetLowestEval();
@@ -41,7 +42,10 @@ class Engine {
   Node root_;
   NodeInfo root_info_;
 
-  PositionTable<NodeInfo, 24> transposition_table;
+  std::array<int32_t, 6> piece_values = {1000, 5000, 3000, 3000, 9000, 0};
+
+  PositionTable<NodeInfo, 24> transposition_table_;
+  PositionTable<bool, 16> no_return_table_;
 
   static const int32_t lowest_eval_ = -2000000000;
   static const int32_t highest_eval_ = 2000000000;

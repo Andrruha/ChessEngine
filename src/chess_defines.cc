@@ -45,6 +45,16 @@ bool operator!=(Coordinates first, Coordinates second) {
   return !(first == second);
 }
 
+bool KnightMoveAway(Coordinates first, Coordinates second) {
+  return DistanceSquared(first, second) == 5;
+}
+
+int8_t DistanceSquared(Coordinates first, Coordinates second) {
+  int8_t file_delta = first.file - second.file;
+  int8_t rank_delta = first.rank = second.rank;
+  return file_delta*file_delta + rank_delta*rank_delta;
+}
+
 bool BelongsToLine(Segment line, Coordinates point) {
   Coordinates big_delta;
   big_delta.file = line.end.file - line.start.file;
