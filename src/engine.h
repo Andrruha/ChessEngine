@@ -3,6 +3,7 @@
 
 #include <array>
 #include <limits>
+#include <list>
 
 #include "chess_defines.h"
 #include "node.h"
@@ -14,13 +15,15 @@ namespace chess_engine {
 class Engine {
  public:
   Engine(const Position& position, const ZobristHashFunction hash_func);
+
   int32_t GetEvaluation(int16_t min_depth);
   Move GetBestMove(int16_t min_depth);
   void MakeMove(Move move);
+  int32_t SimpleEvaluate(const Node& node);
 
   const Position& GetPosition() const;
-
-  int32_t SimpleEvaluate(const Node& node);
+  
+  std::list<Move> GetPrincipalVariation();
 
   static int32_t GetHighestEval();
   static int32_t GetLowestEval();
@@ -34,6 +37,7 @@ class Engine {
   NodeInfo RunSearch(
     int16_t depth,
     const Node& root,
+    std::list<Move>& parent_variation,
     int32_t alpha = lowest_eval_,
     int32_t beta = highest_eval_
   );
@@ -43,6 +47,9 @@ class Engine {
   NodeInfo root_info_;
 
   std::array<int32_t, 6> piece_values = {1000, 5000, 3000, 3000, 9000, 0};
+
+  std::list<Move> current_variation_;
+  std::list<Move> principal_variation_;
 
   PositionTable<NodeInfo, 24> transposition_table_;
   PositionTable<bool, 16> no_return_table_;

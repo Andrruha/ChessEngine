@@ -9,14 +9,14 @@ namespace chess_engine {
 
   int32_t Engine::GetEvaluation(int16_t min_depth) {
     if (root_info_.depth < min_depth) {
-      root_info_ = RunSearch(min_depth, root_);
+      root_info_ = RunSearch(min_depth, root_, principal_variation_);
     }
     return root_info_.eval;
   }
 
   Move Engine::GetBestMove(int16_t min_depth) {
     if (root_info_.depth < min_depth) {
-      root_info_ = RunSearch(min_depth, root_);
+      root_info_ = RunSearch(min_depth, root_, principal_variation_);
     }
     return root_info_.best_move;
   }
@@ -43,13 +43,15 @@ namespace chess_engine {
     int32_t opponents_king_denominator = 0;
     for (int8_t file = 0; file < 8; ++file) {
       for (int8_t rank = 0; rank < 8; ++rank) {
-        if (DistanceSquared(king, {file, rank})<=2) {
+        int8_t king_distance = DistanceSquared(king, {file, rank});
+        if (king_distance<=2) {
           if (!node.GetAttacksByPlayer({file, rank}, opponent)) {
             king_freedom += 100;
           }
           ++king_denominator;
         }
-        if (DistanceSquared(opponents_king, {file, rank})<=2) {
+        int8_t opponents_king_distance = DistanceSquared(opponents_king, {file, rank});
+        if (opponents_king_distance<=2) {
           if (!node.GetAttacksByPlayer({file, rank}, to_move)) {
             opponents_king_freedom += 100;
           }
@@ -70,6 +72,10 @@ namespace chess_engine {
     opponents_king_freedom /= opponents_king_denominator;
     ret -= opponents_king_freedom;
     return ret;
+  }
+
+  std::list<Move> Engine::GetPrincipalVariation() {
+    return principal_variation_;
   }
 
   int32_t Engine::GetLowestEval() {
@@ -100,7 +106,13 @@ namespace chess_engine {
 
   // TODO(Andrey): proper hashing
   // TODO(Andrey): rewrite depth
-  Engine::NodeInfo Engine::RunSearch(int16_t depth, const Node& node, int32_t alpha, int32_t beta) {
+  Engine::NodeInfo Engine::RunSearch(
+    int16_t depth,
+    const Node& node,
+    std::list<Move>& parent_variation,
+    int32_t alpha,
+    int32_t beta
+  ) {
     if (node.IsCheckmate()) {
       return {depth, lowest_eval_, {{-1,-1}, {-1,-1}, pieces::kNone}};
     }
@@ -115,53 +127,39 @@ namespace chess_engine {
 
     std::vector<Move> legal_moves = node.GetLegalMoves();
     SortMoves(legal_moves, node.GetPosition());
-    int32_t eval = lowest_eval_;
     Move best_move = legal_moves[0];
+    std::list<Move> principal_variation;  // best line in the currently analysed child
+
     for (Move move:legal_moves) {
       ZobristHash new_hash = node.HashAfterMove(move);
+      NodeInfo child;
       if (no_return_table_.Get(new_hash.Get())) {
-        if (0 > eval) {
-          eval = 0;
-          best_move = move;
-          if (eval > beta) {
-            no_return_table_.Set(node.GetHash().Get(), false);
-            return {depth, eval, best_move};
-          }
-          if (eval > alpha) {
-            alpha = eval;
-          }
+        child = {depth, 0, {{-1,-1},{-1,-1}, pieces::kNone}};
+      } else {
+        child = transposition_table_.Get(new_hash.Get());
+        if (child.depth < depth-1) {
+          Node new_node = node;
+          new_node.MakeMove(move);
+          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
         }
-        continue;
       }
-      NodeInfo child = transposition_table_.Get(new_hash.Get());
-      if (child.depth < depth-1) {
-        Node new_node = node;
-        new_node.MakeMove(move);
-
-        // TODO(Andrey): Simple evaluation after move?
-        child = RunSearch(depth-1, new_node, -beta, -alpha);
-      }
-      if (-child.eval > eval) {
-        eval = -child.eval;
+      if (-child.eval > alpha) {
+        // Node is either a cut node or a PV node
+        alpha = -child.eval;
         best_move = move;
-        if (eval >= beta) {
-          // Node is a cut node
-          no_return_table_.Set(node.GetHash().Get(), false);
-          if (eval > highest_eval_ - longest_checkmate_) {
-            --eval;
-          }
-          return {depth, eval, best_move};
-        }
-        if (eval > alpha) {
-          // Node is a PV node
-          alpha = eval;
-        }
+        parent_variation = principal_variation;
+        parent_variation.push_front(move);
+      }
+      if (alpha >= beta) {
+        // Node is a cut node
+        no_return_table_.Set(node.GetHash().Get(), false);
+        break;
       }
     }
-    if (eval > highest_eval_ - longest_checkmate_) {
-      --eval;
+    if (alpha > highest_eval_ - longest_checkmate_) {
+      --alpha;
     }
     no_return_table_.Set(node.GetHash().Get(), false);
-    return {depth, eval, best_move};
+    return {depth, alpha, best_move};
   }
 }  // namespace chess_engine
