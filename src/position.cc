@@ -26,6 +26,7 @@ Player Position::PlayerToMove() const {
 
 void Position::SetPlayerToMove(Player player) {
   to_move_ = player;
+  moves_generated_ = false;
 }
 
  void Position::PassTheTurn() {
@@ -40,6 +41,11 @@ void Position::SetPlayerToMove(Player player) {
 
 void Position::MakeMove(Move move) {
   check_segment_ = {{-1,-1},{-1,-1}};  // If move is legal it deals with all checks
+  if (GetSquare(move.from).type == PieceType::kPawn || GetSquare(move.to) != pieces::kNone) {
+    halfmove_clock_ = 0;
+  } else {
+    ++halfmove_clock_;
+  }
 
   // En pessant
   int8_t dir = PawnDirection(to_move_);
@@ -108,12 +114,6 @@ void Position::MakeMove(Move move) {
     SetCastlingRights(Player::kBlack, Castle::kKingside, false);
   }
 
-  if (GetSquare(move.from).type == PieceType::kPawn) {
-    halfmove_clock_ = 0;
-  } else {
-    ++halfmove_clock_;
-  }
-
   PassTheTurn();
 }
 
@@ -121,12 +121,56 @@ std::vector<Move> Position::GetLegalMoves() const {
   if (!moves_generated_) {
     legal_moves_.clear();
     GenerateMoves();
+    moves_generated_ = true;
   }
   return legal_moves_;
 }
 
 bool Position::MoveIsLegal(Move move) const {
   // TODO(Andrey): Implement
+}
+
+bool Position::MoveIsCheckFast(Move move) const {
+  Pins pins = GetPins(move.from, Opponent(to_move_));
+  bool pin = pins.vertical || pins.upward || pins.horisontal || pins.downward;
+  AttackInfo check_info = checking_squares_[move.to.file][move.to.rank];
+
+  int8_t Attacks::* by_king = to_move_==Player::kWhite ? &Attacks::by_black : & Attacks::by_white; 
+  bool rook_check = 
+  check_info.up.*by_king || check_info.right.*by_king ||
+  check_info.down.*by_king || check_info.left.*by_king;
+  bool bishop_check = 
+  check_info.up_right.*by_king || check_info.down_right.*by_king ||
+  check_info.down_left.*by_king || check_info.up_left.*by_king;
+  Coordinates king = GetKing(Opponent(to_move_));
+
+  // TODO(Andrey): King discoveries!
+  int8_t dir = PawnDirection(to_move_);
+  switch (move.piece.type) {
+    case (PieceType::kPawn): 
+      if (move.to + Coordinates{1,dir} == king || move.to + Coordinates{-1,dir} == king) {
+        return true;
+      }
+      if (move.to == move.from + Coordinates{0, dir} && (pins.upward || pins.horisontal || pins.downward)) {
+        return true;
+      }
+      return false;
+      // We assume promotions always happen on the back rank
+    break;
+    case (PieceType::kRook):
+      return pin || rook_check;
+    break;
+    case (PieceType::kKnight):
+      return pin || KnightMoveAway(move.to, king);
+    break;
+    case (PieceType::kBishop):
+      return pin || bishop_check;
+    break;
+    case (PieceType::kQueen):
+      return pin || rook_check || bishop_check;
+    break;
+  }
+  return false;
 }
 
 Piece Position::GetSquare(Coordinates square) const {
@@ -217,6 +261,8 @@ void Position::SetSquare(Coordinates square, Piece piece) {
   UpdateStraightAttacks(square, directed_attacks, checking_squares);
 
   board_[square.file][square.rank] = piece;
+
+  moves_generated_ = false;
 }
 
 
@@ -254,6 +300,7 @@ void Position::SetCastlingRights(Player player, Castle castle, bool value) {
   } else {
     assert(false);  // Invalid player or castling side
   }
+  moves_generated_ = false;
 }
 
   int16_t Position::GetMoveNumber() const {
@@ -269,6 +316,7 @@ void Position::SetCastlingRights(Player player, Castle castle, bool value) {
   }
   void Position::SetHalfmoveClock(int16_t value) {
     halfmove_clock_ = value;
+    moves_generated_ = false;
   }
 
 Coordinates Position::GetEnPessant() const {
@@ -277,6 +325,7 @@ Coordinates Position::GetEnPessant() const {
 
 void Position::SetEnPessant(Coordinates square) {
   en_pessant_ = square;
+  moves_generated_ = false;
 }
 
 Coordinates Position::GetKing(Player player) const {

@@ -78,6 +78,8 @@ bool operator==(Coordinates first, Coordinates second);
 bool operator!=(Coordinates first, Coordinates second);
 Coordinates operator+(Coordinates first, Coordinates second);
 
+bool KnightMoveAway(Coordinates first, Coordinates second);
+int8_t DistanceSquared(Coordinates first, Coordinates second);
 struct Segment {
   Coordinates start;
   Coordinates end;

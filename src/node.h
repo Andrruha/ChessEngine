@@ -22,6 +22,7 @@ class Node {
   void SetPlayerToMove(Player player);
   void PassTheTurn();
 
+  bool MoveIsCheckFast(Move move) const;
   std::vector<Move> GetLegalMoves() const;
   void MakeMove(Move move);
 
@@ -42,6 +43,7 @@ class Node {
 
   Coordinates GetKing(Player player) const;
   int8_t GetChecks(Player player) const;
+  int8_t GetAttacksByPlayer(Coordinates square, Player player) const;
 
   int16_t GetMoveNumber() const;
   void SetMoveNumber(int16_t value);
@@ -49,11 +51,14 @@ class Node {
   int16_t GetHalfmoveClock() const;
   void SetHalfmoveClock(int16_t value);
 
+  Coordinates GetLastCapture() const;
+
   ZobristHash GetHash() const;
   const Position& GetPosition() const;
  private:
   ZobristHash hash_;
   Position position_;
+  Coordinates last_capture_ = {-1,-1};
 };
 
 }

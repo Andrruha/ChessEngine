@@ -42,12 +42,17 @@ void Node::PassTheTurn() {
   hash_.PassTheTurn();
 }
 
+bool Node::MoveIsCheckFast(Move move) const {
+  return position_.MoveIsCheckFast(move);
+}
+
 std::vector<Move> Node::GetLegalMoves() const {
   return position_.GetLegalMoves();
 }
 
 void Node::MakeMove(Move move) {
   HashMove(hash_, move);
+  last_capture_ = move.to;
   position_.MakeMove(move);
 }
 
@@ -198,6 +203,10 @@ int8_t Node::GetChecks(Player player) const {
   return position_.GetChecks(player);
 }
 
+int8_t Node::GetAttacksByPlayer(Coordinates square, Player player) const {
+  return position_.GetAttacksByPlayer(square, player);
+}
+
 int16_t Node::GetMoveNumber() const {
   return position_.GetMoveNumber();
 }
@@ -212,6 +221,10 @@ int16_t Node::GetHalfmoveClock() const {
 
 void Node::SetHalfmoveClock(int16_t value) {
   position_.SetHalfmoveClock(value);
+}
+
+Coordinates Node::GetLastCapture() const {
+  return last_capture_;
 }
 
 ZobristHash Node::GetHash() const {
