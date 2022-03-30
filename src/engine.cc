@@ -9,14 +9,14 @@ namespace chess_engine {
 
   int32_t Engine::GetEvaluation(int16_t min_depth) {
     if (root_info_.depth < min_depth) {
-      root_info_ = RunSearch(min_depth, root_, principal_variation_);
+      root_info_ = RunIncrementalSearch(min_depth);
     }
     return root_info_.eval;
   }
 
   Move Engine::GetBestMove(int16_t min_depth) {
     if (root_info_.depth < min_depth) {
-      root_info_ = RunSearch(min_depth, root_, principal_variation_);
+      root_info_ = RunIncrementalSearch(min_depth);
     }
     return root_info_.best_move;
   }
@@ -92,24 +92,29 @@ namespace chess_engine {
     return longest_checkmate_;
   }
 
-  void Engine::SortMoves(std::vector<Move>& moves, const Position& position) {
+  void Engine::SortMoves(std::vector<Move>& moves, const Node& node) {
     int insert_index = 0;
-    for (int read_index = 0; read_index < static_cast<int>(moves.size()); ++read_index) {
-      if (position.MoveIsCheckFast(moves[read_index])) {
+    NodeInfo old_info = transposition_table_.Get(node.GetHash().Get());
+    for (int read_index = insert_index; read_index < static_cast<int>(moves.size()); ++read_index) {
+      if (moves[read_index]==old_info.best_move) {
         std::swap(moves[insert_index], moves[read_index]);
         ++insert_index;
       }
     }
     for (int read_index = insert_index; read_index < static_cast<int>(moves.size()); ++read_index) {
-      if (position.GetSquare(moves[read_index].to) != pieces::kNone) {
+      if (node.MoveIsCheckFast(moves[read_index])) {
+        std::swap(moves[insert_index], moves[read_index]);
+        ++insert_index;
+      }
+    }
+    for (int read_index = insert_index; read_index < static_cast<int>(moves.size()); ++read_index) {
+      if (node.GetSquare(moves[read_index].to) != pieces::kNone) {
         std::swap(moves[insert_index], moves[read_index]);
         ++insert_index;
       }
     }
   }
 
-  // TODO(Andrey): proper hashing
-  // TODO(Andrey): rewrite depth
   Engine::NodeInfo Engine::RunSearch(
     int16_t depth,
     const Node& node,
@@ -127,16 +132,17 @@ namespace chess_engine {
     if (!depth) {
       ret =  {0, NodeType::kPV, SimpleEvaluate(node), {{-1,-1}, {-1,-1}, pieces::kNone}};
     }
-    if (use_transposition_table_) {
-      transposition_table_.Set(node.GetHash().Get(), ret);
-    }
     if (ret.depth >= 0) {
+      if (use_transposition_table_) {
+        transposition_table_.Set(node.GetHash().Get(), ret);
+      }
       return ret;
     }
+
     no_return_table_.Set(node.GetHash().Get(), true);
 
     std::vector<Move> legal_moves = node.GetLegalMoves();
-    SortMoves(legal_moves, node.GetPosition());
+    SortMoves(legal_moves, node);
     Move best_move = legal_moves[0];
     NodeType type = NodeType::kFailLow;
     std::list<Move> principal_variation;  // best line in the currently analysed child
@@ -175,7 +181,6 @@ namespace chess_engine {
       if (alpha >= beta) {
         // Node is a cut node
         type = NodeType::kFailHigh;
-        no_return_table_.Set(node.GetHash().Get(), false);
         break;
       }
     }
@@ -188,5 +193,12 @@ namespace chess_engine {
       transposition_table_.Set(node.GetHash().Get(), ret);
     }
     return ret;
+  }
+
+  Engine::NodeInfo Engine::RunIncrementalSearch(int16_t depth) {
+    for(int i = 1; i < depth; ++i) {
+      RunSearch(i, root_, principal_variation_);
+    }
+    return RunSearch(depth, root_, principal_variation_);
   }
 }  // namespace chess_engine

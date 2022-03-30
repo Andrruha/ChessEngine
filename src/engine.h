@@ -44,12 +44,13 @@ class Engine {
   };
   NodeInfo RunSearch(
     int16_t depth,
-    const Node& root,
+    const Node& node,
     std::list<Move>& parent_variation,
     int32_t alpha = lowest_eval_,
     int32_t beta = highest_eval_
   );
-  void SortMoves(std::vector<Move>& moves, const Position& position);
+  NodeInfo RunIncrementalSearch(int16_t depth);
+  void SortMoves(std::vector<Move>& moves, const Node& node);
 
   Node root_;
   NodeInfo root_info_;
