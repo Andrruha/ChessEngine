@@ -25,7 +25,7 @@ class PositionTable {
     uint64_t key;
     T value;
   };
-  const uint64_t mask_ = (1ull << index_size)-1;
+  static const uint64_t mask_ = (1ull << index_size)-1;
   std::vector<Entry> elements_ = std::vector<Entry>(1ull << index_size, {0ull, T()});
 };
 
