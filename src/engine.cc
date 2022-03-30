@@ -22,9 +22,9 @@ namespace chess_engine {
   }
 
   void Engine::MakeMove(Move move) {
-    no_return_table_.Set(root_.GetHash().Get(), true);
+    no_return_table_.Set(root_.GetHash(), true);
     root_.MakeMove(move);
-    root_info_ = transposition_table_.Get(root_.GetHash().Get());
+    root_info_ = transposition_table_.Get(root_.GetHash());
   }
 
   const Position& Engine::GetPosition() const {
@@ -94,7 +94,7 @@ namespace chess_engine {
 
   void Engine::SortMoves(std::vector<Move>& moves, const Node& node, int16_t depth) {
     int insert_index = 0;
-    NodeInfo old_info = transposition_table_.Get(node.GetHash().Get());
+    NodeInfo old_info = transposition_table_.Get(node.GetHash());
     for (int read_index = insert_index; read_index < static_cast<int>(moves.size()); ++read_index) {
       if (moves[read_index]==old_info.best_move) {
         std::swap(moves[insert_index], moves[read_index]);
@@ -140,12 +140,12 @@ namespace chess_engine {
     }
     if (ret.depth >= 0) {
       if (use_transposition_table_) {
-        transposition_table_.Set(node.GetHash().Get(), ret);
+        transposition_table_.Set(node.GetHash(), ret);
       }
       return ret;
     }
 
-    no_return_table_.Set(node.GetHash().Get(), true);
+    no_return_table_.Set(node.GetHash(), true);
 
     std::vector<Move> legal_moves = node.GetLegalMoves();
     SortMoves(legal_moves, node, depth);
@@ -195,10 +195,10 @@ namespace chess_engine {
     if (alpha > highest_eval_ - longest_checkmate_) {
       --alpha;
     }
-    no_return_table_.Set(node.GetHash().Get(), false);
+    no_return_table_.Set(node.GetHash(), false);
     ret = {depth, type, alpha, best_move};
     if (use_transposition_table_) {
-      transposition_table_.Set(node.GetHash().Get(), ret);
+      transposition_table_.Set(node.GetHash(), ret);
     }
     return ret;
   }
