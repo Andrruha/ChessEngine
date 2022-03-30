@@ -92,11 +92,17 @@ namespace chess_engine {
     return longest_checkmate_;
   }
 
-  void Engine::SortMoves(std::vector<Move>& moves, const Node& node) {
+  void Engine::SortMoves(std::vector<Move>& moves, const Node& node, int16_t depth) {
     int insert_index = 0;
     NodeInfo old_info = transposition_table_.Get(node.GetHash().Get());
     for (int read_index = insert_index; read_index < static_cast<int>(moves.size()); ++read_index) {
       if (moves[read_index]==old_info.best_move) {
+        std::swap(moves[insert_index], moves[read_index]);
+        ++insert_index;
+      }
+    }
+    for (int read_index = insert_index; read_index < static_cast<int>(moves.size()); ++read_index) {
+      if (moves[read_index]==cut_moves[depth-1].first || moves[read_index]==cut_moves[depth-1].second) {
         std::swap(moves[insert_index], moves[read_index]);
         ++insert_index;
       }
@@ -142,7 +148,7 @@ namespace chess_engine {
     no_return_table_.Set(node.GetHash().Get(), true);
 
     std::vector<Move> legal_moves = node.GetLegalMoves();
-    SortMoves(legal_moves, node);
+    SortMoves(legal_moves, node, depth);
     Move best_move = legal_moves[0];
     NodeType type = NodeType::kFailLow;
     std::list<Move> principal_variation;  // best line in the currently analysed child
@@ -164,7 +170,7 @@ namespace chess_engine {
         if (-child.eval <= alpha) {
           // Either we have found a good TT entry,
           // or node was just beta-prunned during a recursive call 
-          continue;
+          // continue;
         }
         Node new_node = node;
         new_node.MakeMove(move);
@@ -181,6 +187,8 @@ namespace chess_engine {
       if (alpha >= beta) {
         // Node is a cut node
         type = NodeType::kFailHigh;
+        cut_moves[depth-1].second = cut_moves[depth-1].first;
+        cut_moves[depth-1].first = move;
         break;
       }
     }
@@ -195,10 +203,17 @@ namespace chess_engine {
     return ret;
   }
 
+  Engine::NodeInfo Engine::RunSearch(int16_t depth) {
+    cut_moves = std::vector<std::pair<Move,Move>>(
+      depth, {{{-1,-1},{-1,-1},pieces::kNone}, {{-1,-1},{-1,-1},pieces::kNone}}
+    );
+    return RunSearch(depth, root_, principal_variation_);
+  }
+
   Engine::NodeInfo Engine::RunIncrementalSearch(int16_t depth) {
     for(int i = 1; i < depth; ++i) {
-      RunSearch(i, root_, principal_variation_);
+      RunSearch(i);
     }
-    return RunSearch(depth, root_, principal_variation_);
+    return RunSearch(depth);
   }
 }  // namespace chess_engine

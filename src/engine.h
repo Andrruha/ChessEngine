@@ -49,8 +49,11 @@ class Engine {
     int32_t alpha = lowest_eval_,
     int32_t beta = highest_eval_
   );
+
+  NodeInfo RunSearch(int16_t depth);
+
   NodeInfo RunIncrementalSearch(int16_t depth);
-  void SortMoves(std::vector<Move>& moves, const Node& node);
+  void SortMoves(std::vector<Move>& moves, const Node& node, int16_t depth);
 
   Node root_;
   NodeInfo root_info_;
@@ -63,6 +66,7 @@ class Engine {
   PositionTable<NodeInfo, 25> transposition_table_;
   bool use_transposition_table_ = true;
   PositionTable<bool, 16> no_return_table_;
+  std::vector<std::pair<Move, Move>> cut_moves;
 
   static const int32_t lowest_eval_ = -2000000000;
   static const int32_t highest_eval_ = 2000000000;
