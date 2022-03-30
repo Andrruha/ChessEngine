@@ -33,7 +33,7 @@ int64_t CountMovesWithHash(const Node& node, int depth, PositionTable<HashEntry,
   int64_t ret = 0;
   std::vector<Move> legal_moves = node.GetLegalMoves();
   if (depth == 1) {
-    table.Set(node.GetHash().Get(), {depth, static_cast<int64_t>(legal_moves.size())});
+    table.Set(node.GetHash(), {depth, static_cast<int64_t>(legal_moves.size())});
     return legal_moves.size();
   }
   for (Move move:legal_moves) {
@@ -46,7 +46,7 @@ int64_t CountMovesWithHash(const Node& node, int depth, PositionTable<HashEntry,
       ret += CountMovesWithHash(new_node, depth-1, table);
     }
   }
-  table.Set(node.GetHash().Get(), {depth, ret});
+  table.Set(node.GetHash(), {depth, ret});
   return ret;
 }
 

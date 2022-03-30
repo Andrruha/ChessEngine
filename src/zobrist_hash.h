@@ -37,10 +37,12 @@ class ZobristHash{
   ZobristHash(const ZobristHash& other);
 
   uint64_t Get() const;
+  operator uint64_t() const;
   void ToggleSquare(Coordinates square, Piece piece);
   void ToggleEnPessant(Coordinates square);
   void ToggleCastlingRights(Player player, Castle castle);
   void PassTheTurn();
+
  private:
  const ZobristHashFunction& func_;
  uint64_t hash_ = 0;

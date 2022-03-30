@@ -100,6 +100,10 @@ uint64_t ZobristHash::Get() const {
   return hash_;
 }
 
+ZobristHash::operator uint64_t() const {
+  return hash_;
+}
+
 void ZobristHash::ToggleSquare(Coordinates square, Piece piece) {
   hash_ ^= func_.HashPiece(square, piece);
 }
