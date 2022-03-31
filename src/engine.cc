@@ -24,7 +24,8 @@ namespace chess_engine {
   void Engine::MakeMove(Move move) {
     no_return_table_.Set(root_.GetHash(), true);
     root_.MakeMove(move);
-    root_info_ = transposition_table_.Get(root_.GetHash());
+    // root_info_ = transposition_table_.Get(root_.GetHash());
+    root_info_ = NodeInfo();
   }
 
   const Position& Engine::GetPosition() const {
@@ -150,6 +151,7 @@ namespace chess_engine {
     std::vector<Move> legal_moves = node.GetLegalMoves();
     SortMoves(legal_moves, node, depth);
     Move best_move = legal_moves[0];
+    int32_t eval = lowest_eval_;
     NodeType type = NodeType::kFailLow;
     std::list<Move> principal_variation;  // best line in the currently analysed child
 
@@ -167,19 +169,29 @@ namespace chess_engine {
         }
       }
       if (child.type == NodeType::kFailHigh) {
-        if (-child.eval <= alpha) {
+        if (-child.eval <= alpha && eval != lowest_eval_) {
           // Either we have found a good TT entry,
           // or node was just beta-prunned during a recursive call 
-          // continue;
+          continue;
         }
         Node new_node = node;
         new_node.MakeMove(move);
         child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
       }
+
+      if (-child.eval > eval) {
+        eval = -child.eval;
+      }
       if (-child.eval > alpha) {
         // Node is either a cut node or a PV node
+        if (child.type == NodeType::kFailLow) {
+          Node new_node = node;
+          new_node.MakeMove(move);
+          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
+        }
         type = NodeType::kPV;
         alpha = -child.eval;
+        eval = -child.eval;
         best_move = move;
         parent_variation = principal_variation;
         parent_variation.push_front(move);
@@ -192,11 +204,11 @@ namespace chess_engine {
         break;
       }
     }
-    if (alpha > highest_eval_ - longest_checkmate_) {
-      --alpha;
+    if (eval > highest_eval_ - longest_checkmate_) {
+      --eval;
     }
     no_return_table_.Set(node.GetHash(), false);
-    ret = {depth, type, alpha, best_move};
+    ret = {depth, type, eval, best_move};
     if (use_transposition_table_) {
       transposition_table_.Set(node.GetHash(), ret);
     }
