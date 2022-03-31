@@ -23,7 +23,8 @@ class Engine {
 
   const Position& GetPosition() const;
   
-  std::list<Move> GetPrincipalVariation();
+  std::list<Move> GetPrincipalVariation() const;
+  int64_t GetNodesVisited() const;
 
   void UseTranspositionTable(bool value);
 
@@ -47,7 +48,8 @@ class Engine {
     const Node& node,
     std::list<Move>& parent_variation,
     int32_t alpha = lowest_eval_,
-    int32_t beta = highest_eval_
+    int32_t beta = highest_eval_,
+    int16_t ply = 0
   );
 
   NodeInfo RunSearch(int16_t depth);
@@ -62,6 +64,7 @@ class Engine {
 
   std::list<Move> current_variation_;
   std::list<Move> principal_variation_;
+  int64_t nodes_visited_;
 
   PositionTable<NodeInfo, 25> transposition_table_;
   bool use_transposition_table_ = true;

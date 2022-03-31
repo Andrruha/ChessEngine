@@ -1,6 +1,7 @@
 #include "engine.h"
 
 #include <algorithm>
+#include <cassert>
 
 namespace chess_engine {
   Engine::Engine(const Position& position, const ZobristHashFunction hash_func):
@@ -75,8 +76,12 @@ namespace chess_engine {
     return ret;
   }
 
-  std::list<Move> Engine::GetPrincipalVariation() {
+  std::list<Move> Engine::GetPrincipalVariation() const {
     return principal_variation_;
+  }
+
+  int64_t Engine::GetNodesVisited() const {
+    return nodes_visited_;
   }
 
   void Engine::UseTranspositionTable(bool value) {
@@ -127,8 +132,13 @@ namespace chess_engine {
     const Node& node,
     std::list<Move>& parent_variation,
     int32_t alpha,
-    int32_t beta
+    int32_t beta,
+    int16_t ply
   ) {
+    if (ply == 0) {
+      nodes_visited_ = 0;
+    }
+    ++nodes_visited_;
     NodeInfo ret;
     if (node.IsCheckmate()) {
       ret = {depth, NodeType::kPV, lowest_eval_, {{-1,-1}, {-1,-1}, pieces::kNone}};
@@ -156,6 +166,7 @@ namespace chess_engine {
     std::list<Move> principal_variation;  // best line in the currently analysed child
 
     for (Move move:legal_moves) {
+      // Search tables
       ZobristHash new_hash = node.HashAfterMove(move);
       NodeInfo child;
       if (no_return_table_.Get(new_hash.Get())) {
@@ -165,45 +176,54 @@ namespace chess_engine {
         if (child.depth < depth-1) {
           Node new_node = node;
           new_node.MakeMove(move);
-          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
+          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha, ply+1);
         }
-      }
-      if (child.type == NodeType::kFailHigh) {
-        if (-child.eval <= alpha && eval != lowest_eval_) {
-          // Either we have found a good TT entry,
-          // or node was just beta-prunned during a recursive call 
-          continue;
-        }
-        Node new_node = node;
-        new_node.MakeMove(move);
-        child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
       }
 
-      if (-child.eval > eval) {
-        eval = -child.eval;
-      }
-      if (-child.eval > alpha) {
-        // Node is either a cut node or a PV node
-        if (child.type == NodeType::kFailLow) {
+      // Deal with wrong bounds
+      switch (child.type) {
+      case NodeType::kFailLow:
+        if (-child.eval < beta) {
           Node new_node = node;
           new_node.MakeMove(move);
-          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
+          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha, ply+1);
         }
-        type = NodeType::kPV;
-        alpha = -child.eval;
+        break;
+      case NodeType::kFailHigh:
+          if (alpha < -child.eval) {
+          Node new_node = node;
+          new_node.MakeMove(move);
+          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha, ply+1);
+        }
+        break;
+      }
+
+      // Update evaluation
+      if (-child.eval > eval) {
         eval = -child.eval;
         best_move = move;
+      }
+      if (-child.eval > alpha) {
+        type = NodeType::kPV;
+        alpha = -child.eval;
         parent_variation = principal_variation;
         parent_variation.push_front(move);
       }
       if (alpha >= beta) {
         // Node is a cut node
         type = NodeType::kFailHigh;
-        cut_moves[depth-1].second = cut_moves[depth-1].first;
-        cut_moves[depth-1].first = move;
+        if (!node.MoveIsCheckFast(move) &&
+          node.GetSquare(move.to) == pieces::kNone &&
+          cut_moves[depth-1].first != move)
+        {
+          cut_moves[depth-1].second = cut_moves[depth-1].first;
+          cut_moves[depth-1].first = move;
+        }
         break;
       }
     }
+
+    // Write to transposition table and return
     if (eval > highest_eval_ - longest_checkmate_) {
       --eval;
     }
