@@ -22,6 +22,10 @@ namespace chess_engine {
     return root_info_.best_move;
   }
 
+ void Engine::StartSearch(std::function<bool(int)> proceed) {
+    root_info_ = RunInfiniteSearch(proceed);
+  }
+
   void Engine::MakeMove(Move move) {
     no_return_table_.Set(root_.GetHash(), true);
     root_.MakeMove(move);
@@ -247,5 +251,13 @@ namespace chess_engine {
       RunSearch(i);
     }
     return RunSearch(depth);
+  }
+
+  Engine::NodeInfo Engine::RunInfiniteSearch(std::function<bool(int16_t)> proceed) {
+    NodeInfo ret;
+    for(int i = 1; proceed(i); ++i) {
+      ret = RunSearch(i);
+    }
+    return ret;
   }
 }  // namespace chess_engine

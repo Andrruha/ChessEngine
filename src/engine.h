@@ -4,6 +4,7 @@
 #include <array>
 #include <limits>
 #include <list>
+#include <functional>
 
 #include "chess_defines.h"
 #include "node.h"
@@ -16,8 +17,12 @@ class Engine {
  public:
   Engine(const Position& position, const ZobristHashFunction hash_func);
 
-  int32_t GetEvaluation(int16_t min_depth);
-  Move GetBestMove(int16_t min_depth);
+  int32_t GetEvaluation(int16_t min_depth = 0);
+  Move GetBestMove(int16_t min_depth = 0);
+
+  // 'proceed' callback says when to stop evaluating
+  void StartSearch(std::function<bool(int)> proceed);
+
   void MakeMove(Move move);
   int32_t SimpleEvaluate(const Node& node);
 
@@ -53,8 +58,9 @@ class Engine {
   );
 
   NodeInfo RunSearch(int16_t depth);
-
   NodeInfo RunIncrementalSearch(int16_t depth);
+  NodeInfo RunInfiniteSearch(std::function<bool(int16_t)> proceed);
+
   void SortMoves(std::vector<Move>& moves, const Node& node, int16_t depth);
 
   Node root_;
@@ -70,6 +76,9 @@ class Engine {
   bool use_transposition_table_ = true;
   PositionTable<bool, 16> no_return_table_;
   std::vector<std::pair<Move, Move>> cut_moves;
+
+  std::function<bool(int)> proceed_with_batch_;
+  std::function<void(int, int64_t, std::list<Move>)> report_progress_;
 
   static const int32_t lowest_eval_ = -2000000000;
   static const int32_t highest_eval_ = 2000000000;
