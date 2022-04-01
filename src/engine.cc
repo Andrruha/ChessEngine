@@ -22,8 +22,30 @@ namespace chess_engine {
     return root_info_.best_move;
   }
 
- void Engine::StartSearch(std::function<bool(int)> proceed) {
-    root_info_ = RunInfiniteSearch(proceed);
+ void Engine::StartSearch() {
+    NodeInfo last;
+    proceed_with_batch_value_ = true;
+    for(int16_t i = 1; i < max_depth_; ++i) {
+      last = RunSearch(i);
+      if (last.depth != -1) {
+        root_info_ = last;
+        report_progress_(i, nodes_visited_, principal_variation_);
+      } else {
+        break;
+      }
+    }
+  }
+
+  void Engine::SetBatchSize(int64_t value) {
+    batch_size_ = value;
+  }
+
+  void Engine::SetProceedWithBatchCallback(std::function<bool()> value) {
+    proceed_with_batch_ = value;
+  }
+
+  void Engine::SetReportProgressCallback(std::function<void(int, int64_t, std::list<Move>)> value) {
+    report_progress_ = value;
   }
 
   void Engine::MakeMove(Move move) {
@@ -139,6 +161,15 @@ namespace chess_engine {
     int32_t beta,
     int16_t ply
   ) {
+    ++processed_in_the_batch_;
+    if (processed_in_the_batch_ >= batch_size_) {
+      report_progress_(root_info_.depth, nodes_visited_, principal_variation_);
+      proceed_with_batch_value_ = proceed_with_batch_();
+      processed_in_the_batch_ = 0;
+    }
+    if (!proceed_with_batch_) {
+      return NodeInfo();
+    }
     if (ply == 0) {
       nodes_visited_ = 0;
     }
@@ -159,8 +190,6 @@ namespace chess_engine {
       }
       return ret;
     }
-
-    no_return_table_.Set(node.GetHash(), true);
 
     std::vector<Move> legal_moves = node.GetLegalMoves();
     SortMoves(legal_moves, node, depth);
@@ -202,6 +231,10 @@ namespace chess_engine {
         break;
       }
 
+      if (!proceed_with_batch_value_) {
+        return NodeInfo();
+      }
+
       // Update evaluation
       if (-child.eval > eval) {
         eval = -child.eval;
@@ -231,7 +264,6 @@ namespace chess_engine {
     if (eval > highest_eval_ - longest_checkmate_) {
       --eval;
     }
-    no_return_table_.Set(node.GetHash(), false);
     ret = {depth, type, eval, best_move};
     if (use_transposition_table_) {
       transposition_table_.Set(node.GetHash(), ret);
