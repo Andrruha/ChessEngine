@@ -169,7 +169,6 @@ namespace chess_engine {
   ) {
     ++processed_in_the_batch_;
     if (processed_in_the_batch_ >= batch_size_) {
-      report_progress_(root_info_.depth, root_info_.eval, nodes_visited_, principal_variation_);
       proceed_with_batch_value_ = proceed_with_batch_();
       processed_in_the_batch_ = 0;
     }
@@ -251,6 +250,9 @@ namespace chess_engine {
         alpha = -child.eval;
         parent_variation = principal_variation;
         parent_variation.push_front(move);
+        if (ply == 0) {
+          report_progress_(depth, eval, nodes_visited_, principal_variation_);
+        }
       }
       if (alpha >= beta) {
         // Node is a cut node
