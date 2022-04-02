@@ -40,6 +40,10 @@ void Position::SetPlayerToMove(Player player) {
  }
 
 void Position::MakeMove(Move move) {
+  if (move.piece == pieces::kNone) {
+    move.piece = GetSquare(move.from);
+  }
+
   check_segment_ = {{-1,-1},{-1,-1}};  // If move is legal it deals with all checks
   if (GetSquare(move.from).type == PieceType::kPawn || GetSquare(move.to) != pieces::kNone) {
     halfmove_clock_ = 0;
@@ -585,7 +589,6 @@ void Position::GenerateMoves() const {
 }
 
 void Position::GenerateKnightMoves(Coordinates original_square) const {
-  Piece piece = GetSquare(original_square);
   std::array<Coordinates, 8> jumps = {
     Coordinates{2,1}, {2,-1}, {-2,1}, {-2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}
   };
@@ -597,7 +600,7 @@ void Position::GenerateKnightMoves(Coordinates original_square) const {
       continue;
     }
     if (GetSquare(destination).player != to_move_) {
-      PushLegalMove({original_square, destination, piece});
+      PushLegalMove({original_square, destination, pieces::kNone});
     }
   }
 }
@@ -613,7 +616,7 @@ void Position::GenerateKingMoves(Coordinates original_square) const {
         continue;
       }
       if (GetSquare(destination).player != to_move_) {
-        PushLegalMove({original_square, destination, {PieceType::kKing, to_move_}});
+        PushLegalMove({original_square, destination, pieces::kNone});
       }
     }
   }
@@ -628,11 +631,11 @@ void Position::GenerateStraightMoves(Coordinates original_square,
   while (WithinTheBoard(destination)) {
     if (GetSquare(destination) != pieces::kNone) {
       if (GetSquare(destination).player != to_move_) {
-        PushLegalMove({original_square, destination, piece});
+        PushLegalMove({original_square, destination, pieces::kNone});
       }
       return;
     }
-    PushLegalMove({original_square, destination, piece});
+    PushLegalMove({original_square, destination, pieces::kNone});
     destination += delta;
   }
 }
@@ -646,7 +649,7 @@ void Position::GeneratePawnPushes(Coordinates original_square) const {
   }
   if (GetSquare(destination) == pieces::kNone) {
     if (destination.rank != PromotionRank(to_move_)) {
-      PushLegalMove({original_square, destination, {PieceType::kPawn, to_move_}});
+      PushLegalMove({original_square, destination, pieces::kNone});
     } else {
       for (PieceType promote_to : kPromotionOptions) {
         PushLegalMove({original_square, destination, {promote_to, to_move_}});
@@ -659,7 +662,7 @@ void Position::GeneratePawnPushes(Coordinates original_square) const {
       }
       if (GetSquare(destination) == pieces::kNone) {
         // implicitly using the size of the board
-        PushLegalMove({original_square, destination, {PieceType::kPawn, to_move_}});
+        PushLegalMove({original_square, destination, pieces::kNone});
       }
     }
   }
@@ -718,7 +721,7 @@ void Position::GeneratePawnCaptures(Coordinates original_square, int8_t file_del
 
   if (destination.rank != PromotionRank(to_move_)) {
     PushLegalMove({
-      original_square, destination, {PieceType::kPawn, to_move_}
+      original_square, destination, pieces::kNone
     });
   } else {
     for (PieceType promote_to : kPromotionOptions) {
@@ -745,7 +748,7 @@ void Position::GenerateCastles() const {
       }
     }
     if (possible) {
-      PushLegalMove({king, current, {PieceType::kKing, to_move_}});
+      PushLegalMove({king, current, pieces::kNone});
     }
   }
   if (GetCastlingRights(to_move_, Castle::kQueenside)) {
@@ -767,7 +770,7 @@ void Position::GenerateCastles() const {
       possible = false;
     }
     if (possible) {
-      PushLegalMove({king, current, {PieceType::kKing, to_move_}});
+      PushLegalMove({king, current, pieces::kNone});
     }
   }
 }
@@ -866,12 +869,13 @@ Position::Pins Position::GetPins(Coordinates square, Player player) const {
 }
 
 void Position::PushLegalMove(Move move) const {
-  if (move.piece.type == PieceType::kKing) {
-    if (move.piece.player == Player::kWhite) {
+  Piece old_piece = GetSquare(move.from);
+  if (old_piece.type == PieceType::kKing) {
+    if (old_piece.player == Player::kWhite) {
       if (!GetAttacks(move.to).by_black) {
         legal_moves_.push_back(move);
       }
-    } else if (move.piece.player == Player::kBlack) {
+    } else if (old_piece.player == Player::kBlack) {
       if (!GetAttacks(move.to).by_white) {
         legal_moves_.push_back(move);
       }

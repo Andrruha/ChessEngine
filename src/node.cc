@@ -57,6 +57,9 @@ void Node::MakeMove(Move move) {
 }
 
 void Node::HashMove(ZobristHash& hash, Move move) const {
+  if (move.piece == pieces::kNone) {
+    move.piece = GetSquare(move.from);
+  }
   Piece old_piece = position_.GetSquare(move.from);
 
   int8_t dir = PawnDirection(position_.PlayerToMove());

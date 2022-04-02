@@ -229,25 +229,24 @@ std::string PositionToFen(const Position& position) {
   return ret;
 }
 
-std::string MoveToUci(Move move, const Position& position) {
+std::string MoveToUci(Move move) {
   std::string ret;
   ret += CoordinatesToString(move.from) + CoordinatesToString(move.to);
-  Piece old_piece = position.GetSquare(move.from);
-  if (old_piece.type == PieceType::kPawn && move.piece.type != PieceType::kPawn) {
+  if (move.piece != pieces::kNone) {
     ret += "=";
     ret += PieceToFen({move.piece.type, Player::kWhite});
   }
   return ret;
 }
 
-Move UciToMove(const std::string& str, const Position& position) {
+Move UciToMove(const std::string& str) {
   Move ret;
   ret.from = StringToCoordinates(str);
   ret.to = StringToCoordinates(str.substr(2));
   if (str.size() == 6) {
     ret.piece = FenToPiece(str[5]);
   } else {
-    ret.piece = position.GetSquare(ret.from);
+    ret.piece = pieces::kNone;
   }
   return ret;
 }
