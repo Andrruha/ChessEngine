@@ -234,6 +234,12 @@ ZobristHash Node::GetHash() const {
   return hash_;
 }
 
+void Node::SetPosition(const Position& position) {
+  position_ = position;
+  last_capture_ = {-1,-1};
+  hash_.RecalculateForPosition(position);
+}
+
 const Position& Node::GetPosition() const {
   return position_;
 }

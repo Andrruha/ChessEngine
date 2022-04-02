@@ -120,4 +120,12 @@ void ZobristHash::PassTheTurn() {
   hash_ ^= func_.HashTurn();
 }
 
+const ZobristHashFunction& ZobristHash::GetHashFunction() const {
+  return func_;
+}
+
+void ZobristHash::RecalculateForPosition(const Position& position) {
+  hash_ = func_.SlowHash(position);
+}
+
 }  // namespace chess_engine

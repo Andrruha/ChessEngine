@@ -29,7 +29,7 @@ namespace chess_engine {
       last = RunSearch(i);
       if (last.depth != -1) {
         root_info_ = last;
-        report_progress_(i, nodes_visited_, principal_variation_);
+        report_progress_(i, root_info_.eval, nodes_visited_, principal_variation_);
       } else {
         break;
       }
@@ -44,7 +44,7 @@ namespace chess_engine {
     proceed_with_batch_ = value;
   }
 
-  void Engine::SetReportProgressCallback(std::function<void(int, int64_t, std::list<Move>)> value) {
+  void Engine::SetReportProgressCallback(std::function<void(int16_t, int32_t, int64_t, std::list<Move>)> value) {
     report_progress_ = value;
   }
 
@@ -53,6 +53,12 @@ namespace chess_engine {
     root_.MakeMove(move);
     // root_info_ = transposition_table_.Get(root_.GetHash());
     root_info_ = NodeInfo();
+  }
+
+  void Engine::SetPosition(const Position& position) {
+    root_.SetPosition(position);
+    transposition_table_.Clear();
+    no_return_table_.Clear();
   }
 
   const Position& Engine::GetPosition() const {
@@ -163,7 +169,7 @@ namespace chess_engine {
   ) {
     ++processed_in_the_batch_;
     if (processed_in_the_batch_ >= batch_size_) {
-      report_progress_(root_info_.depth, nodes_visited_, principal_variation_);
+      report_progress_(root_info_.depth, root_info_.eval, nodes_visited_, principal_variation_);
       proceed_with_batch_value_ = proceed_with_batch_();
       processed_in_the_batch_ = 0;
     }

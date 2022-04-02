@@ -43,6 +43,9 @@ class ZobristHash{
   void ToggleCastlingRights(Player player, Castle castle);
   void PassTheTurn();
 
+  void RecalculateForPosition(const Position& position);
+
+  const ZobristHashFunction& GetHashFunction() const;
  private:
  const ZobristHashFunction& func_;
  uint64_t hash_ = 0;
