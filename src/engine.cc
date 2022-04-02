@@ -1,6 +1,7 @@
 #include "engine.h"
 
 #include <algorithm>
+#include <cassert>
 
 namespace chess_engine {
   Engine::Engine(const Position& position, const ZobristHashFunction hash_func):
@@ -21,10 +22,37 @@ namespace chess_engine {
     return root_info_.best_move;
   }
 
+ void Engine::StartSearch() {
+    NodeInfo last;
+    proceed_with_batch_value_ = true;
+    for(int16_t i = 1; i < max_depth_; ++i) {
+      last = RunSearch(i);
+      if (last.depth != -1) {
+        root_info_ = last;
+        report_progress_(i, nodes_visited_, principal_variation_);
+      } else {
+        break;
+      }
+    }
+  }
+
+  void Engine::SetBatchSize(int64_t value) {
+    batch_size_ = value;
+  }
+
+  void Engine::SetProceedWithBatchCallback(std::function<bool()> value) {
+    proceed_with_batch_ = value;
+  }
+
+  void Engine::SetReportProgressCallback(std::function<void(int, int64_t, std::list<Move>)> value) {
+    report_progress_ = value;
+  }
+
   void Engine::MakeMove(Move move) {
     no_return_table_.Set(root_.GetHash(), true);
     root_.MakeMove(move);
-    root_info_ = transposition_table_.Get(root_.GetHash());
+    // root_info_ = transposition_table_.Get(root_.GetHash());
+    root_info_ = NodeInfo();
   }
 
   const Position& Engine::GetPosition() const {
@@ -74,8 +102,12 @@ namespace chess_engine {
     return ret;
   }
 
-  std::list<Move> Engine::GetPrincipalVariation() {
+  std::list<Move> Engine::GetPrincipalVariation() const {
     return principal_variation_;
+  }
+
+  int64_t Engine::GetNodesVisited() const {
+    return nodes_visited_;
   }
 
   void Engine::UseTranspositionTable(bool value) {
@@ -126,8 +158,22 @@ namespace chess_engine {
     const Node& node,
     std::list<Move>& parent_variation,
     int32_t alpha,
-    int32_t beta
+    int32_t beta,
+    int16_t ply
   ) {
+    ++processed_in_the_batch_;
+    if (processed_in_the_batch_ >= batch_size_) {
+      report_progress_(root_info_.depth, nodes_visited_, principal_variation_);
+      proceed_with_batch_value_ = proceed_with_batch_();
+      processed_in_the_batch_ = 0;
+    }
+    if (!proceed_with_batch_) {
+      return NodeInfo();
+    }
+    if (ply == 0) {
+      nodes_visited_ = 0;
+    }
+    ++nodes_visited_;
     NodeInfo ret;
     if (node.IsCheckmate()) {
       ret = {depth, NodeType::kPV, lowest_eval_, {{-1,-1}, {-1,-1}, pieces::kNone}};
@@ -145,15 +191,15 @@ namespace chess_engine {
       return ret;
     }
 
-    no_return_table_.Set(node.GetHash(), true);
-
     std::vector<Move> legal_moves = node.GetLegalMoves();
     SortMoves(legal_moves, node, depth);
     Move best_move = legal_moves[0];
+    int32_t eval = lowest_eval_;
     NodeType type = NodeType::kFailLow;
     std::list<Move> principal_variation;  // best line in the currently analysed child
 
     for (Move move:legal_moves) {
+      // Search tables
       ZobristHash new_hash = node.HashAfterMove(move);
       NodeInfo child;
       if (no_return_table_.Get(new_hash.Get())) {
@@ -163,40 +209,62 @@ namespace chess_engine {
         if (child.depth < depth-1) {
           Node new_node = node;
           new_node.MakeMove(move);
-          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
+          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha, ply+1);
         }
       }
-      if (child.type == NodeType::kFailHigh) {
-        if (-child.eval <= alpha) {
-          // Either we have found a good TT entry,
-          // or node was just beta-prunned during a recursive call 
-          // continue;
+
+      // Deal with wrong bounds
+      switch (child.type) {
+      case NodeType::kFailLow:
+        if (-child.eval < beta) {
+          Node new_node = node;
+          new_node.MakeMove(move);
+          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha, ply+1);
         }
-        Node new_node = node;
-        new_node.MakeMove(move);
-        child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha);
+        break;
+      case NodeType::kFailHigh:
+          if (alpha < -child.eval) {
+          Node new_node = node;
+          new_node.MakeMove(move);
+          child = RunSearch(depth-1, new_node, principal_variation, -beta, -alpha, ply+1);
+        }
+        break;
+      }
+
+      if (!proceed_with_batch_value_) {
+        return NodeInfo();
+      }
+
+      // Update evaluation
+      if (-child.eval > eval) {
+        eval = -child.eval;
+        best_move = move;
       }
       if (-child.eval > alpha) {
-        // Node is either a cut node or a PV node
         type = NodeType::kPV;
         alpha = -child.eval;
-        best_move = move;
         parent_variation = principal_variation;
         parent_variation.push_front(move);
       }
       if (alpha >= beta) {
         // Node is a cut node
         type = NodeType::kFailHigh;
-        cut_moves[depth-1].second = cut_moves[depth-1].first;
-        cut_moves[depth-1].first = move;
+        if (!node.MoveIsCheckFast(move) &&
+          node.GetSquare(move.to) == pieces::kNone &&
+          cut_moves[depth-1].first != move)
+        {
+          cut_moves[depth-1].second = cut_moves[depth-1].first;
+          cut_moves[depth-1].first = move;
+        }
         break;
       }
     }
-    if (alpha > highest_eval_ - longest_checkmate_) {
-      --alpha;
+
+    // Write to transposition table and return
+    if (eval > highest_eval_ - longest_checkmate_) {
+      --eval;
     }
-    no_return_table_.Set(node.GetHash(), false);
-    ret = {depth, type, alpha, best_move};
+    ret = {depth, type, eval, best_move};
     if (use_transposition_table_) {
       transposition_table_.Set(node.GetHash(), ret);
     }
@@ -215,5 +283,13 @@ namespace chess_engine {
       RunSearch(i);
     }
     return RunSearch(depth);
+  }
+
+  Engine::NodeInfo Engine::RunInfiniteSearch(std::function<bool(int16_t)> proceed) {
+    NodeInfo ret;
+    for(int i = 1; proceed(i); ++i) {
+      ret = RunSearch(i);
+    }
+    return ret;
   }
 }  // namespace chess_engine
