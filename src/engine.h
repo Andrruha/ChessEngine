@@ -1,4 +1,4 @@
-#ifndef CHEES_ENGINE_SRC_ENGINE_
+#ifndef CHESS_ENGINE_SRC_ENGINE_
 #define CHESS_ENGINE_SRC_ENGINE_
 
 #include <array>
