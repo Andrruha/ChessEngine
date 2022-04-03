@@ -29,6 +29,10 @@ void WinboardProtocol::WaitForCommands() {
     parts.push_back(part);
     if (parts[0] == "protover") {
       SendFeatures();
+    } else if (parts[0] == "white") {
+      set_color_callback_(Player::kWhite);
+    } else if (parts[0] == "black") {
+      set_color_callback_(Player::kBlack);
     } else if (parts[0] == "new") {
       new_game_callback_();
     } else if (parts[0] == "usermove") {

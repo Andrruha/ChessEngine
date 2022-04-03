@@ -8,6 +8,7 @@ EngineManager::EngineManager(AbstractProtocol* protocol, Engine* engine):
 protocol_(protocol), engine_(engine){
   protocol_->SetNewGameCallback([this](){NewGame();});
   protocol_->SetMoveRecievedCallback([this](Move move){MakeMove(move);});
+  protocol_->SetSetColorCallback([this](Player value){SetEngineColor(value);});
 
   engine_->SetProceedWithBatchCallback([this](){return ProceedWithBatch();});
   engine_->SetReportProgressCallback([this](
@@ -29,6 +30,9 @@ void EngineManager::StartMainLoop() {
 
 void EngineManager::SetEngineColor(Player value) {
   engine_color_ = value;
+  if (engine_->GetPosition().PlayerToMove() == engine_color_) {
+    MakeBestMove();
+  }
 }
 
 void EngineManager::NewGame() {

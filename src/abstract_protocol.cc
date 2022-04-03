@@ -10,4 +10,8 @@ void AbstractProtocol::SetMoveRecievedCallback(std::function<void(Move)> callbac
   move_recieved_callback_ = callback;
 }
 
+void AbstractProtocol::SetSetColorCallback(std::function<void(Player)> callback) {
+  set_color_callback_ = callback;
+}
+
 }  // namespace chess_engine
