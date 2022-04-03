@@ -24,6 +24,9 @@ std::string PositionToFen(const Position& position);
 std::string MoveToUci(Move move);
 Move UciToMove(const std::string& str);
 
+std::string MoveToXBoard(Move move);
+Move XBoardToMove(const std::string& str);
+
 } //  namespace chess_engine
 
 #endif  // CHESS_ENGINE_SRC_FEN

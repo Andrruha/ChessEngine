@@ -239,12 +239,39 @@ std::string MoveToUci(Move move) {
   return ret;
 }
 
+// TODO(Andrey): Fix promotion in UCI
 Move UciToMove(const std::string& str) {
   Move ret;
   ret.from = StringToCoordinates(str);
   ret.to = StringToCoordinates(str.substr(2));
   if (str.size() == 6) {
     ret.piece = FenToPiece(str[5]);
+  } else {
+    ret.piece = pieces::kNone;
+  }
+  return ret;
+}
+
+std::string MoveToXBoard(Move move) {
+  std::string ret;
+  ret += CoordinatesToString(move.from) + CoordinatesToString(move.to);
+  if (move.piece != pieces::kNone) {
+    ret += PieceToFen({move.piece.type, Player::kBlack});
+  }
+  return ret;
+}
+
+Move XBoardToMove(const std::string& str) {
+  Move ret;
+  ret.from = StringToCoordinates(str);
+  ret.to = StringToCoordinates(str.substr(2));
+  if (str.size() == 5) {
+    ret.piece = FenToPiece(str[4]);
+    if (ret.to.rank == PromotionRank(Player::kWhite)) {
+      ret.piece.player = Player::kWhite;
+    } else {
+      ret.piece.player = Player::kBlack;
+    }
   } else {
     ret.piece = pieces::kNone;
   }

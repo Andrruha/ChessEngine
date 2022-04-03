@@ -32,13 +32,13 @@ void WinboardProtocol::WaitForCommands() {
     } else if (parts[0] == "new") {
       new_game_callback_();
     } else if (parts[0] == "usermove") {
-      move_recieved_callback_(UciToMove(parts[1]));
+      move_recieved_callback_(XBoardToMove(parts[1]));
     }
   }
 }
 
 void WinboardProtocol::MakeMove(Move move) {
-  std::cout << "move " << MoveToUci(move) << std::endl;
+  std::cout << "move " << MoveToXBoard(move) << std::endl;
 }
 
 void WinboardProtocol::DisplayInfo(
@@ -50,7 +50,7 @@ void WinboardProtocol::DisplayInfo(
 ) const {
   std::cout << ply << " " << centipawns << " " << centiseconds << " " << nodes << " ";
   for (chess_engine::Move move: pv) {
-    std::cout << chess_engine::MoveToUci(move) << " ";
+    std::cout << chess_engine::MoveToXBoard(move) << " ";
   }
   std::cout << std::endl;
 }
