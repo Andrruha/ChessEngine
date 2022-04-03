@@ -21,6 +21,7 @@ protocol_(protocol), engine_(engine){
 }
 
 void EngineManager::StartMainLoop() {
+  // TODO(Andrey): loop condition
   while(true) {
     protocol_-> WaitForCommands();
   }
