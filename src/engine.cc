@@ -251,7 +251,11 @@ namespace chess_engine {
         parent_variation = principal_variation;
         parent_variation.push_front(move);
         if (ply == 0) {
-          report_progress_(depth, eval, nodes_visited_, principal_variation_);
+          int32_t eval_to_report = eval;
+          if (eval_to_report > highest_eval_ - longest_checkmate_) {
+            --eval_to_report;
+          }
+          report_progress_(depth, eval_to_report, nodes_visited_, principal_variation_);
         }
       }
       if (alpha >= beta) {
