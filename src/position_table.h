@@ -20,6 +20,9 @@ class PositionTable {
   void Set(uint64_t key, T value) {
     elements_[key & mask_] = {key, value};  // Always replace for now
   }
+  void Clear() {
+    elements_ = std::vector<Entry>(1ull << index_size, {0ull, T()});
+  }
  private:
   struct Entry {
     uint64_t key;

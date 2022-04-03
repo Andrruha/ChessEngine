@@ -21,8 +21,11 @@ Coordinates StringToCoordinates(const std::string& str);
 Position FenToPosition(const std::string& fen);
 std::string PositionToFen(const Position& position);
 
-std::string MoveToUci(Move move, const Position& position);
-Move UciToMove(const std::string& str, const Position& position);
+std::string MoveToUci(Move move);
+Move UciToMove(const std::string& str);
+
+std::string MoveToXBoard(Move move);
+Move XBoardToMove(const std::string& str);
 
 } //  namespace chess_engine
 

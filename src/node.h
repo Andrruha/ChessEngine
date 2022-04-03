@@ -54,6 +54,7 @@ class Node {
   Coordinates GetLastCapture() const;
 
   ZobristHash GetHash() const;
+  void SetPosition(const Position& position);
   const Position& GetPosition() const;
  private:
   ZobristHash hash_;

@@ -1,4 +1,4 @@
-#ifndef CHEES_ENGINE_SRC_ENGINE_
+#ifndef CHESS_ENGINE_SRC_ENGINE_
 #define CHESS_ENGINE_SRC_ENGINE_
 
 #include <array>
@@ -28,11 +28,12 @@ class Engine {
   // and must return whether engine should continue
   void SetProceedWithBatchCallback(std::function<bool()> value);
   // this function is called back to display progress 
-  void SetReportProgressCallback(std::function<void(int, int64_t, std::list<Move>)> value);
+  void SetReportProgressCallback(std::function<void(int16_t, int32_t, int64_t, std::list<Move>)> value);
 
   void MakeMove(Move move);
   int32_t SimpleEvaluate(const Node& node);
 
+  void SetPosition(const Position& position);
   const Position& GetPosition() const;
   
   std::list<Move> GetPrincipalVariation() const;
@@ -89,7 +90,7 @@ class Engine {
   int64_t processed_in_the_batch_;
   bool proceed_with_batch_value_ = true;
   std::function<bool()> proceed_with_batch_ = [](){return true;};
-  std::function<void(int16_t, int64_t, std::list<Move>)> report_progress_ = [](int16_t, int64_t, std::list<Move>){};
+  std::function<void(int16_t, int32_t, int64_t, std::list<Move>)> report_progress_ = [](int16_t, int32_t, int64_t, std::list<Move>){};
 
   static const int16_t max_depth_ = 1000;
   static const int32_t lowest_eval_ = -2000000000;
