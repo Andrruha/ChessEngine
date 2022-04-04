@@ -58,6 +58,7 @@ class Engine {
   };
   NodeInfo RunSearch(
     int16_t depth,
+    int16_t check_extra_depth,
     const Node& node,
     std::list<Move>& parent_variation,
     int32_t alpha = lowest_eval_,
@@ -65,11 +66,11 @@ class Engine {
     int16_t ply = 0
   );
 
-  NodeInfo RunSearch(int16_t depth);
+  NodeInfo RunSearch(int16_t depth, int16_t check_extra_depth = 0);
   NodeInfo RunIncrementalSearch(int16_t depth);
   NodeInfo RunInfiniteSearch(std::function<bool(int16_t)> proceed);
 
-  void SortMoves(std::vector<Move>& moves, const Node& node, int16_t depth);
+  void SortMoves(std::vector<Move>& moves, const Node& node, int16_t ply);
 
   Node root_;
   NodeInfo root_info_;
@@ -83,7 +84,8 @@ class Engine {
   PositionTable<NodeInfo, 25> transposition_table_;
   bool use_transposition_table_ = true;
   PositionTable<bool, 16> no_return_table_;
-  std::vector<std::pair<Move, Move>> cut_moves;
+  std::vector<std::pair<Move, Move>> cut_moves = 
+    std::vector<std::pair<Move, Move>>(max_depth_, {kNullMove, kNullMove});
 
   // Batch evaluation
   int64_t batch_size_ = -1;
