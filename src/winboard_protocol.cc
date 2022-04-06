@@ -14,9 +14,9 @@ void WinboardProtocol::WaitForCommands() {
   std::getline(std::cin, command);
   if (!command.empty()) {
     std::ofstream log;
-    log.open("log_protocol.txt", std::ios_base::app);
+    /*log.open("log_protocol.txt", std::ios_base::app);
     log << "recieved: " << command << "\n"; 
-    log.close();
+    log.close();*/
     std::vector<std::string> parts;
     int pos = -1;
     int next_pos;
@@ -35,6 +35,12 @@ void WinboardProtocol::WaitForCommands() {
       set_color_callback_(Player::kBlack);
     } else if (parts[0] == "new") {
       new_game_callback_();
+    } else if (parts[0] == "setboard") {
+      Position position = FenToPosition(
+        parts[1] + " " + parts[2] + " " + parts[3] + " " +
+        parts[4] + " " + parts[5] + " " + parts[6]
+      );
+      set_board_callback_(position);
     } else if (parts[0] == "usermove") {
       move_recieved_callback_(XBoardToMove(parts[1]));
     }

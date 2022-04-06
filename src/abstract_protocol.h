@@ -26,10 +26,12 @@ class AbstractProtocol {
   void SetNewGameCallback(std::function<void()> callback);
   void SetMoveRecievedCallback(std::function<void(Move)> callback);
   void SetSetColorCallback(std::function<void(Player)> callback);
+  void SetSetBoardCallback(std::function<void(const Position&)> callback);
  protected:
   std::function<void()> new_game_callback_;
   std::function<void(Move)> move_recieved_callback_;
   std::function<void(Player)> set_color_callback_;
+  std::function<void(Position)> set_board_callback_;
 };
 
 }  // namespace chess_engine

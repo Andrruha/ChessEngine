@@ -9,6 +9,7 @@ protocol_(protocol), engine_(engine){
   protocol_->SetNewGameCallback([this](){NewGame();});
   protocol_->SetMoveRecievedCallback([this](Move move){MakeMove(move);});
   protocol_->SetSetColorCallback([this](Player value){SetEngineColor(value);});
+  protocol_->SetSetBoardCallback([this](const Position& position){SetPosition(position);});
 
   engine_->SetProceedWithBatchCallback([this](){return ProceedWithBatch();});
   engine_->SetReportProgressCallback([this](
@@ -37,6 +38,14 @@ void EngineManager::SetEngineColor(Player value) {
 
 void EngineManager::NewGame() {
   engine_->SetPosition(starting_position_);
+  engine_color_ = Player::kBlack;
+  if (engine_->GetPosition().PlayerToMove() == engine_color_) {
+    MakeBestMove();
+  }
+}
+
+void EngineManager::SetPosition(const Position& position) {
+  engine_->SetPosition(position);
   if (engine_->GetPosition().PlayerToMove() == engine_color_) {
     MakeBestMove();
   }

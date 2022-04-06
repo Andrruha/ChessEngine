@@ -16,8 +16,9 @@ class EngineManager {
   void StartMainLoop();
 
   void SetEngineColor(Player value);
-
   void NewGame();
+  void SetPosition(const Position& Position);
+
   void MakeMove(Move move);
   void MakeBestMove();
 
