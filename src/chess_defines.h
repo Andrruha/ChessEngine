@@ -94,6 +94,8 @@ struct Move {
   Piece piece;  // Piece that moves or piece to promote to.
 };
 
+const Move kNullMove = {{-1,-1}, {-1,-1}, pieces::kNone};
+
 bool operator==(Move first, Move second);
 bool operator!=(Move first, Move second);
 
