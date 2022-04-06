@@ -8,6 +8,7 @@ EngineManager::EngineManager(AbstractProtocol* protocol, Engine* engine):
 protocol_(protocol), engine_(engine){
   protocol_->SetNewGameCallback([this](){NewGame();});
   protocol_->SetMoveRecievedCallback([this](Move move){MakeMove(move);});
+  protocol_->SetUndoRecievedCallback([this](){UndoMove();});
   protocol_->SetSetColorCallback([this](Player value){SetEngineColor(value);});
   protocol_->SetSetBoardCallback([this](const Position& position){SetPosition(position);});
 
@@ -37,15 +38,12 @@ void EngineManager::SetEngineColor(Player value) {
 }
 
 void EngineManager::NewGame() {
-  engine_->SetPosition(starting_position_);
-  engine_color_ = Player::kBlack;
-  if (engine_->GetPosition().PlayerToMove() == engine_color_) {
-    MakeBestMove();
-  }
+  SetPosition(starting_position_);
 }
 
 void EngineManager::SetPosition(const Position& position) {
   engine_->SetPosition(position);
+  game_ = Game(position);
   if (engine_->GetPosition().PlayerToMove() == engine_color_) {
     MakeBestMove();
   }
@@ -53,9 +51,15 @@ void EngineManager::SetPosition(const Position& position) {
 
 void EngineManager::MakeMove(Move move) {
   engine_->MakeMove(move);
+  game_.MakeMove(move);
   if (engine_->GetPosition().PlayerToMove() == engine_color_) {
     MakeBestMove();
   }
+}
+
+void EngineManager::UndoMove() {
+  game_.UndoMove();
+  SetPosition(game_.GetPosition());
 }
 
 void EngineManager::MakeBestMove() {
@@ -64,6 +68,7 @@ void EngineManager::MakeBestMove() {
   Move best_move = engine_->GetBestMove();
   engine_->MakeMove(best_move);
   protocol_->MakeMove(best_move);
+  game_.MakeMove(best_move);
 }
 
 void EngineManager::ReportProgress(

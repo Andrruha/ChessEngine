@@ -14,9 +14,9 @@ void WinboardProtocol::WaitForCommands() {
   std::getline(std::cin, command);
   if (!command.empty()) {
     std::ofstream log;
-    /*log.open("log_protocol.txt", std::ios_base::app);
+    log.open("log_protocol.txt", std::ios_base::app);
     log << "recieved: " << command << "\n"; 
-    log.close();*/
+    log.close();
     std::vector<std::string> parts;
     int pos = -1;
     int next_pos;
@@ -43,7 +43,9 @@ void WinboardProtocol::WaitForCommands() {
       set_board_callback_(position);
     } else if (parts[0] == "usermove") {
       move_recieved_callback_(XBoardToMove(parts[1]));
-    }
+    } else if (parts[0] == "undo") {
+      undo_recieved_callback_();
+    } 
   }
 }
 

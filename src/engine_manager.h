@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "abstract_protocol.h"
+#include "game.h"
 #include "engine.h"
 #include "fen.h"
 #include "position.h"
@@ -20,6 +21,7 @@ class EngineManager {
   void SetPosition(const Position& Position);
 
   void MakeMove(Move move);
+  void UndoMove();
   void MakeBestMove();
 
   void ReportProgress(
@@ -38,6 +40,8 @@ class EngineManager {
   Position starting_position_ = chess_engine::FenToPosition (
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
   );
+
+  Game game_ = Game(starting_position_);
 
   Player engine_color_ = Player::kBlack;
 
