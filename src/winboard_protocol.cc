@@ -32,9 +32,9 @@ void WinboardProtocol::ProcessCommands() {
       if (parts[0] == "protover") {
         SendFeatures();
       } else if (parts[0] == "white") {
-        set_color_callback_(Player::kWhite);
-      } else if (parts[0] == "black") {
         set_color_callback_(Player::kBlack);
+      } else if (parts[0] == "black") {
+        set_color_callback_(Player::kWhite);
       } else if (parts[0] == "force") {
         set_mode_callback_(EngineMode::kForce);
       } else if (parts[0] == "go") {
