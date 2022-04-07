@@ -25,6 +25,8 @@ class EngineManager {
   void UndoMove();
   void Think();
 
+  void MakeBestMove();
+
   void ReportProgress(
     int16_t ply,
     int32_t eval,
@@ -45,6 +47,9 @@ class EngineManager {
   Game game_ = Game(starting_position_);
   EngineMode engine_mode_ = EngineMode::kForce;
   Player engine_color_ = Player::kBlack;
+
+  bool thinking_ = false;
+  bool abort_thinking_ = false;
 
   std::chrono::steady_clock::time_point last_engine_start_;
 };

@@ -29,29 +29,42 @@ protocol_(protocol), engine_(engine){
 void EngineManager::StartMainLoop() {
   // TODO(Andrey): loop condition
   while(true) {
-    protocol_-> ProcessCommands();
+    protocol_->ProcessCommands();
+    abort_thinking_ = false;
+    if (engine_mode_ == EngineMode::kAnalyse) {
+      Think();
+    } else if (
+      engine_->GetPosition().PlayerToMove() == engine_color_ &&
+      engine_mode_ == EngineMode::kPlay
+    ) {
+      Think();
+    }
+    protocol_->ProcessCommands();  // Migth've recieved commands while thinking
+    if (
+      engine_->GetPosition().PlayerToMove() == engine_color_ &&
+      engine_mode_ == EngineMode::kPlay &&
+      !abort_thinking_
+    ) {
+      MakeBestMove();
+    }
   }
 }
 
 void EngineManager::SetEngineColor(Player value) {
   engine_color_ = value;
-  if (engine_->GetPosition().PlayerToMove() == engine_color_) {
-    Think();
-  }
 }
 
 void EngineManager::NewGame() {
   SetPosition(starting_position_);
   SetMode(EngineMode::kPlay);
   SetEngineColor(Opponent(starting_position_.PlayerToMove()));
+  abort_thinking_ = true;
 }
 
 void EngineManager::SetPosition(const Position& position) {
   engine_->SetPosition(position);
   game_ = Game(position);
-  if (engine_->GetPosition().PlayerToMove() == engine_color_) {
-    Think();
-  }
+  abort_thinking_ = true;
 }
 
 void EngineManager::SetMode(EngineMode mode) {
@@ -61,28 +74,25 @@ void EngineManager::SetMode(EngineMode mode) {
 void EngineManager::MakeMove(Move move) {
   engine_->MakeMove(move);
   game_.MakeMove(move);
-  if (engine_->GetPosition().PlayerToMove() == engine_color_) {
-    Think();
-  }
+  abort_thinking_ = true;
 }
 
 void EngineManager::UndoMove() {
   game_.UndoMove();
-  SetPosition(game_.GetPosition());
+  engine_->SetPosition(game_.GetPosition());
+  abort_thinking_ = true;
 }
 
 void EngineManager::Think() {
-  if (engine_mode_ == EngineMode::kForce) {
-    return;
-  }
   last_engine_start_ = std::chrono::steady_clock::now();
   engine_->StartSearch();
-  if (engine_mode_ == EngineMode::kPlay) {
-    Move best_move = engine_->GetBestMove();
-    engine_->MakeMove(best_move);
-    protocol_->MakeMove(best_move);
-    game_.MakeMove(best_move);
-  }
+}
+
+void EngineManager::MakeBestMove() {
+  Move best_move = engine_->GetBestMove();
+  engine_->MakeMove(best_move);
+  protocol_->MakeMove(best_move);
+  game_.MakeMove(best_move);
 }
 
 void EngineManager::ReportProgress(
@@ -106,6 +116,10 @@ void EngineManager::ReportProgress(
 }
 
 bool EngineManager::ProceedWithBatch() {
+  protocol_->ProcessCommands();
+  if (abort_thinking_) {
+    return false;
+  }
   auto now = std::chrono::steady_clock::now();
   std::chrono::duration<double> elapsed = now-last_engine_start_;
   switch (engine_mode_) {
