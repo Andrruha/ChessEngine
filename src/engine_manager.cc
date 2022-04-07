@@ -69,6 +69,9 @@ void EngineManager::SetPosition(const Position& position) {
 
 void EngineManager::SetMode(EngineMode mode) {
   engine_mode_ = mode;
+  if (mode == EngineMode::kPlay) {
+    engine_color_ = engine_->GetPosition().PlayerToMove();
+  }
 }
 
 void EngineManager::MakeMove(Move move) {
