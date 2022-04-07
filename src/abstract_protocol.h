@@ -10,9 +10,15 @@
 
 namespace chess_engine {
 
+enum struct EngineMode {
+  kForce = 0,
+  kPlay = 1,
+  kAnalyse = 2
+};
 class AbstractProtocol {
  public:
-  virtual void WaitForCommands() = 0;
+  virtual void ProcessCommands() = 0;
+  virtual void StartInputLoop() = 0;
 
   virtual void MakeMove(Move move) = 0;
   virtual void DisplayInfo(
@@ -27,6 +33,7 @@ class AbstractProtocol {
   void SetMoveRecievedCallback(std::function<void(Move)> callback);
   void SetUndoRecievedCallback(std::function<void()>);
   void SetSetColorCallback(std::function<void(Player)> callback);
+  void SetSetModeCallback(std::function<void(EngineMode)> callback);
   void SetSetBoardCallback(std::function<void(const Position&)> callback);
 
  protected:
@@ -34,6 +41,7 @@ class AbstractProtocol {
   std::function<void(Move)> move_recieved_callback_;
   std::function<void()> undo_recieved_callback_;
   std::function<void(Player)> set_color_callback_;
+  std::function<void(EngineMode)> set_mode_callback_;
   std::function<void(Position)> set_board_callback_;
 };
 

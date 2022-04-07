@@ -19,10 +19,11 @@ class EngineManager {
   void SetEngineColor(Player value);
   void NewGame();
   void SetPosition(const Position& Position);
+  void SetMode(EngineMode mode);
 
   void MakeMove(Move move);
   void UndoMove();
-  void MakeBestMove();
+  void Think();
 
   void ReportProgress(
     int16_t ply,
@@ -42,7 +43,7 @@ class EngineManager {
   );
 
   Game game_ = Game(starting_position_);
-
+  EngineMode engine_mode_ = EngineMode::kForce;
   Player engine_color_ = Player::kBlack;
 
   std::chrono::steady_clock::time_point last_engine_start_;

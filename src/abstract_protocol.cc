@@ -18,6 +18,10 @@ void AbstractProtocol::SetSetColorCallback(std::function<void(Player)> callback)
   set_color_callback_ = callback;
 }
 
+void AbstractProtocol::SetSetModeCallback(std::function<void(EngineMode)> callback) {
+  set_mode_callback_ = callback;
+}
+
 void AbstractProtocol::SetSetBoardCallback(std::function<void(const Position&)> callback) {
   set_board_callback_ = callback;
 }
