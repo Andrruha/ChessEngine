@@ -321,7 +321,9 @@ namespace chess_engine {
     }
     ret = {depth, type, eval, best_move};
     if (use_transposition_table_) {
-      transposition_table_.Set(node.GetHash(), ret);
+      if (transposition_table_.Get(node.GetHash()).depth <= ret.depth) {
+        transposition_table_.Set(node.GetHash(), ret);
+      }
     }
     return ret;
   }
