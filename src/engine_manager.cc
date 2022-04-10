@@ -31,19 +31,22 @@ void EngineManager::StartMainLoop() {
   while(true) {
     protocol_->ProcessCommands();
     abort_thinking_ = false;
+    thought_ = false;
     if (engine_mode_ == EngineMode::kAnalyse) {
-      Think();
+      Think(); // don't set thought to true, because depth mught be too low
     } else if (
       engine_->GetPosition().PlayerToMove() == engine_color_ &&
       engine_mode_ == EngineMode::kPlay
     ) {
       Think();
+      thought_ = true;
     }
     protocol_->ProcessCommands();  // Migth've recieved commands while thinking
     if (
       engine_->GetPosition().PlayerToMove() == engine_color_ &&
       engine_mode_ == EngineMode::kPlay &&
-      !abort_thinking_
+      !abort_thinking_ &&
+      thought_
     ) {
       MakeBestMove();
     }
