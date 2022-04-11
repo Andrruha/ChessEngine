@@ -140,6 +140,19 @@ namespace chess_engine {
         ++insert_index;
       }
     }
+
+    if (static_cast<int>(principal_variation_.size()) > ply) {
+      auto pv_iterator = principal_variation_.begin();
+      std::advance(pv_iterator, ply);
+      Move pv_move = *pv_iterator;
+      for (int read_index = insert_index; read_index < static_cast<int>(moves.size()); ++read_index) {
+        if (moves[read_index]==pv_move) {
+          std::swap(moves[insert_index], moves[read_index]);
+          ++insert_index;
+        }
+      }
+    }
+
     for (int read_index = insert_index; read_index < static_cast<int>(moves.size()); ++read_index) {
       if (moves[read_index]==cut_moves[ply].first || moves[read_index]==cut_moves[ply].second) {
         std::swap(moves[insert_index], moves[read_index]);
