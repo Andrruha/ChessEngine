@@ -49,6 +49,7 @@ class EngineManager {
   Player engine_color_ = Player::kBlack;
 
   bool thinking_ = false;
+  bool thought_ = false;
   bool abort_thinking_ = false;
 
   std::chrono::steady_clock::time_point last_engine_start_;

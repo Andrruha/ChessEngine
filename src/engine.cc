@@ -25,6 +25,7 @@ namespace chess_engine {
  void Engine::StartSearch() {
     NodeInfo last;
     proceed_with_batch_value_ = true;
+    nodes_visited_ = 0;
     for(int16_t i = 1; i < max_depth_; ++i) {
       last = RunSearch(i, i);
       if (last.depth != -1) {
@@ -175,9 +176,6 @@ namespace chess_engine {
     }
     if (!proceed_with_batch_) {
       return NodeInfo();
-    }
-    if (ply == 0) {
-      nodes_visited_ = 0;
     }
     ++nodes_visited_;
     NodeInfo ret;
