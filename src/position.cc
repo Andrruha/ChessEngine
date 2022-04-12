@@ -135,6 +135,7 @@ bool Position::MoveIsLegal(Move move) const {
 }
 
 bool Position::MoveIsCheckFast(Move move) const {
+  move.piece = GetSquare(move.from);
   Pins pins = GetPins(move.from, Opponent(to_move_));
   bool pin = pins.vertical || pins.upward || pins.horisontal || pins.downward;
   AttackInfo check_info = checking_squares_[move.to.file][move.to.rank];
@@ -775,6 +776,116 @@ void Position::GenerateCastles() const {
   }
 }
 
+std::vector<Move> Position::GetCapturesOnSquare(Coordinates square, Player player) const {
+  std::vector<Move> out;
+  GenerateKingMovesOnSquare(square, player, out);
+  if (
+    (GetChecks(player) == 1 && !BelongsToSegment(check_segment_, square)) ||
+    GetChecks(player) > 1
+  ) {
+    return out;
+  }
+  GeneratePawnCapturesOnSquare(square, player, out);
+  GenerateKnightMovesOnSquare(square, player, out);
+
+  GenerateStraightCapturesOnSqaure(square, {0,1}, player, PieceType::kRook, out);
+  GenerateStraightCapturesOnSqaure(square, {1,0}, player, PieceType::kRook, out);
+  GenerateStraightCapturesOnSqaure(square, {0,-1}, player, PieceType::kRook, out);
+  GenerateStraightCapturesOnSqaure(square, {-1,0}, player, PieceType::kRook, out);
+
+  GenerateStraightCapturesOnSqaure(square, {1,1}, player, PieceType::kBishop, out);
+  GenerateStraightCapturesOnSqaure(square, {1,-1}, player, PieceType::kBishop, out);
+  GenerateStraightCapturesOnSqaure(square, {-1,-1}, player, PieceType::kBishop, out);
+  GenerateStraightCapturesOnSqaure(square, {-1,1}, player, PieceType::kBishop, out);
+
+  return out;
+}
+
+void Position::GenerateKnightMovesOnSquare(
+  Coordinates square,
+  Player player,
+  std::vector<Move>& out
+) const {
+    std::array<Coordinates, 8> jumps = {
+    Coordinates{2,1}, {2,-1}, {-2,1}, {-2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}
+  };
+  for (Coordinates jump : jumps) {
+    Coordinates origin = square;
+    origin += jump;
+    if (!WithinTheBoard(origin) || GetSquare(origin) != Piece{PieceType::kKnight, player}) {
+      continue;
+    }
+    Pins pins = GetPins(square, player);
+    if (pins.vertical || pins.upward || pins.horisontal || pins.downward) {
+      continue;
+    }
+  }
+};
+
+void Position::GenerateKingMovesOnSquare(
+  Coordinates square,
+  Player player,
+  std::vector<Move>& out
+) const {
+  if (GetAttacksByPlayer(square, Opponent(player))) {
+    return;
+  }
+  if (DistanceSquared(GetKing(player), square) > 2) {
+    return;
+  }
+  out.push_back({GetKing(player), square, pieces::kNone});
+}
+
+void Position::GeneratePawnCapturesOnSquare(
+    Coordinates square,
+    Player player,
+    std::vector<Move>& out
+) const {
+  if (square == en_pessant_) {
+    return;  // TODO(Andrey): deal with en pessant
+  }
+  int8_t dir = PawnDirection(player);
+  Coordinates first_delta = {
+    static_cast<int8_t>(-dir), static_cast<int8_t>(-dir)
+  };
+  Coordinates second_delta = {
+    static_cast<int8_t>(dir), static_cast<int8_t>(-dir)
+  };
+  for (Coordinates delta : {first_delta, second_delta}) {
+    Coordinates origin = square + delta;
+    if (!WithinTheBoard(origin) || GetSquare(origin) != Piece{PieceType::kPawn, player}) {
+      continue;
+    }
+    Pins pins = GetPins(origin, player);
+    if (FreeInDirection(pins, delta)) {
+      out.push_back({origin, square, pieces::kNone});
+    }
+  }
+}
+
+void Position::GenerateStraightCapturesOnSqaure(
+  Coordinates square,
+  Coordinates delta,
+  Player player,
+  PieceType attacker,
+  std::vector<Move>& out
+) const {
+  Coordinates current = square + delta;
+  while (WithinTheBoard(current) && GetSquare(current) == pieces::kNone) {
+    current += delta;
+  }
+  if (!WithinTheBoard(current)) {
+    return;
+  }
+  Piece piece = GetSquare(current);
+  if (
+    (piece.type == attacker || piece.type == PieceType::kQueen) &&
+    piece.player == player 
+   ) {
+    out.push_back({current, square, pieces::kNone});
+  }
+}
+
 void Position::AttackDirection(
   Coordinates square,
   Coordinates delta,
@@ -866,6 +977,20 @@ Position::Pins Position::GetPins(Coordinates square, Player player) const {
   ret.downward = (attacks.down_right.*by_opponent > 0 && king_attacks.up_left.*by_player > 0) ||
                  (attacks.up_left.*by_opponent > 0 && king_attacks.down_right.*by_player > 0);
   return ret; 
+}
+
+bool Position::FreeInDirection(Pins pins, Coordinates delta) {
+  if (delta == Coordinates{0,1} || delta == Coordinates{0,-1}) {
+    return !pins.upward && !pins.horisontal && !pins.downward;
+  } else if (delta == Coordinates{1,1} || delta == Coordinates {-1,-1}) {
+    return !pins.vertical && !pins.horisontal && !pins.downward;
+  } else if (delta == Coordinates{1,0} || delta == Coordinates{0,1}) {
+    return !pins.vertical && !pins.upward && !pins.downward;
+  } else if (delta == Coordinates{1,-1} || delta == Coordinates{-1,1}) {
+    return !pins.vertical && !pins.upward && !pins.horisontal;
+  }
+  assert(false);  // Invalid delta
+  return true;
 }
 
 void Position::PushLegalMove(Move move) const {

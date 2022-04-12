@@ -24,6 +24,8 @@ class Position {
   void PassTheTurn();
 
   std::vector<Move> GetLegalMoves() const;
+  std::vector<Move> GetCapturesOnSquare(Coordinates square, Player player) const;
+
   bool MoveIsLegal(Move move) const;
   // If function returns true then move is definitely a check
   // If checking move is castling or a capture might return false
@@ -64,6 +66,7 @@ class Position {
 
   Pins GetPins(Coordinates square, Player player) const;
   void SetPin(Coordinates square, Player player, Coordinates delta, bool value);
+  static bool FreeInDirection(Pins pins, Coordinates delta);
 
   void GenerateMoves() const;
   void GeneratePawnMoves(Coordinates original_square) const;
@@ -75,6 +78,33 @@ class Position {
   void GeneratePawnCaptures(Coordinates original_square, int8_t file_delta) const;
   
   void GenerateCastles() const;
+
+  void GenerateKnightMovesOnSquare(
+    Coordinates square,
+    Player player,
+    std::vector<Move>& out
+  ) const;
+
+  void GenerateKingMovesOnSquare(
+    Coordinates square,
+    Player player,
+    std::vector<Move>& out
+  ) const;
+
+  // this will only promote to queen, because it's used in a quiescence search
+  void GeneratePawnCapturesOnSquare(
+    Coordinates square,
+    Player player,
+    std::vector<Move>& out
+  ) const;
+
+  void GenerateStraightCapturesOnSqaure(
+    Coordinates square,
+    Coordinates delta,
+    Player player,
+    PieceType attacker,
+    std::vector<Move>& out
+  ) const;
 
   struct Attacks {
     int8_t by_white;
