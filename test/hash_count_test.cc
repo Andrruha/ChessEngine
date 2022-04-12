@@ -12,23 +12,23 @@ TEST_CASE("Move count with hash is correct in tricky positions", "[position][has
     chess_engine::Position pos = chess_engine::FenToPosition(
       "rnbqkb1r/pppp1ppp/8/4p3/8/5N2/PPPPBnPP/RNBQ1RK1 w kq - 8 5"
     );
-    pos.MakeMove(chess_engine::UciToMove("g1f2", pos));
-    pos.MakeMove(chess_engine::UciToMove("d8h4", pos));
-    pos.MakeMove(chess_engine::UciToMove("f3h4", pos));
-    pos.MakeMove(chess_engine::UciToMove("a7a5", pos));
+    pos.MakeMove(chess_engine::UciToMove("g1f2"));
+    pos.MakeMove(chess_engine::UciToMove("d8h4"));
+    pos.MakeMove(chess_engine::UciToMove("f3h4"));
+    pos.MakeMove(chess_engine::UciToMove("a7a5"));
     REQUIRE(chess_engine::CountMovesWithHash(pos,5,func) == 23946398);
   }
   {
     chess_engine::Position pos = chess_engine::FenToPosition(
       "rnbqkb1r/pppp1ppp/8/4p3/8/5N2/PPPPBnPP/RNBQ1RK1 w kq - 8 5"
     );
-    pos.MakeMove(chess_engine::UciToMove("g1f2", pos));
-    pos.MakeMove(chess_engine::UciToMove("d8h4", pos));
-    pos.MakeMove(chess_engine::UciToMove("f3h4", pos));
-    pos.MakeMove(chess_engine::UciToMove("a7a5", pos));
-    pos.MakeMove(chess_engine::UciToMove("h4g6", pos));
-    pos.MakeMove(chess_engine::UciToMove("f8a3", pos));
-    pos.MakeMove(chess_engine::UciToMove("g6h8", pos));
+    pos.MakeMove(chess_engine::UciToMove("g1f2"));
+    pos.MakeMove(chess_engine::UciToMove("d8h4"));
+    pos.MakeMove(chess_engine::UciToMove("f3h4"));
+    pos.MakeMove(chess_engine::UciToMove("a7a5"));
+    pos.MakeMove(chess_engine::UciToMove("h4g6"));
+    pos.MakeMove(chess_engine::UciToMove("f8a3"));
+    pos.MakeMove(chess_engine::UciToMove("g6h8"));
     REQUIRE(chess_engine::CountMovesWithHash(pos,5,func) == 17675852);
   }
   {
