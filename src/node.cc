@@ -50,9 +50,22 @@ std::vector<Move> Node::GetLegalMoves() const {
   return position_.GetLegalMoves();
 }
 
+std::vector<Move> Node::GetCapturesOnSquare(Coordinates square, Player player) const {
+  return position_.GetCapturesOnSquare(square, player);
+}
+
 void Node::MakeMove(Move move) {
   HashMove(hash_, move);
-  last_capture_ = move.to;
+  if (move == kNullMove) {
+    last_capture_ = {-1,-1};
+    position_.PassTheTurn();
+    return;
+  }
+  if (position_.GetSquare(move.to) != pieces::kNone) {
+    last_capture_ = move.to;
+  } else {
+    last_capture_ = {-1, -1};
+  }
   position_.MakeMove(move);
 }
 

@@ -27,7 +27,7 @@ namespace chess_engine {
     proceed_with_batch_value_ = true;
     nodes_visited_ = 0;
     for(int16_t i = 1; i < max_depth_; ++i) {
-      last = RunSearch(i, i);
+      last = RunSearch(i, 0);
       if (last.depth != -1) {
         root_info_ = last;
         report_progress_(i, root_info_.eval, nodes_visited_, principal_variation_);
@@ -193,13 +193,10 @@ namespace chess_engine {
     ++nodes_visited_;
     NodeInfo ret;
     if (node.IsCheckmate()) {
-      ret = {depth, NodeType::kPV, lowest_eval_, {{-1,-1}, {-1,-1}, pieces::kNone}};
+      ret = {depth, NodeType::kPV, lowest_eval_, kNullMove};
     }
     if (node.IsStalemate()) {
-      ret = {depth, NodeType::kPV, 0, {{-1,-1}, {-1,-1}, pieces::kNone}};
-    }
-    if (!depth) {
-      ret =  {0, NodeType::kPV, SimpleEvaluate(node), {{-1,-1}, {-1,-1}, pieces::kNone}};
+      ret = {depth, NodeType::kPV, 0, kNullMove};
     }
     if (ret.depth >= 0) {
       if (use_transposition_table_) {
@@ -208,8 +205,21 @@ namespace chess_engine {
       return ret;
     }
 
-    std::vector<Move> legal_moves = node.GetLegalMoves();
-    SortMoves(legal_moves, node, ply);
+    std::vector<Move> legal_moves;
+    if (depth > 0) {
+      legal_moves = node.GetLegalMoves();
+      SortMoves(legal_moves, node, ply);
+    } else {
+      if (node.GetLastCapture() != Coordinates{-1,-1}) {
+        legal_moves = node.GetCapturesOnSquare(
+          node.GetLastCapture(), node.PlayerToMove()
+        );
+        legal_moves.push_back(kNullMove);  // hack for now
+      } else {
+        return {0, NodeType::kPV, SimpleEvaluate(node), kNullMove};
+      }
+    }
+    
     Move best_move = legal_moves[0];
     int32_t eval = lowest_eval_;
     NodeType type = NodeType::kFailLow;
@@ -217,14 +227,12 @@ namespace chess_engine {
 
     for (Move move:legal_moves) {
       int16_t child_depth = depth;
-      if (child_depth == 1) {
-        if (move.to == node.GetLastCapture()) {
+      if (child_depth <= 0) {
+        child_depth = 1;  // We are already doing a quiescense search
+      } else {
+        if (check_extra_depth && (node.IsCheck() || node.MoveIsCheckFast(move))) {
           ++child_depth;
-        } else {
-          if (check_extra_depth && (node.IsCheck() || node.MoveIsCheckFast(move))) {
-            ++child_depth;
-            --check_extra_depth;
-          }
+          --check_extra_depth;
         }
       }
       // Search tables
@@ -279,6 +287,7 @@ namespace chess_engine {
         break;
       }
 
+      // Could've changed after subcalls
       if (!proceed_with_batch_value_) {
         return NodeInfo();
       }
@@ -321,9 +330,7 @@ namespace chess_engine {
     }
     ret = {depth, type, eval, best_move};
     if (use_transposition_table_) {
-      if (transposition_table_.Get(node.GetHash()).depth <= ret.depth) {
-        transposition_table_.Set(node.GetHash(), ret);
-      }
+      transposition_table_.Set(node.GetHash(), ret);
     }
     return ret;
   }

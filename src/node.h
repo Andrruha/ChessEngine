@@ -24,6 +24,8 @@ class Node {
 
   bool MoveIsCheckFast(Move move) const;
   std::vector<Move> GetLegalMoves() const;
+  std::vector<Move> GetCapturesOnSquare(Coordinates square, Player player) const;
+
   void MakeMove(Move move);
 
   // Incrementaly update hash after a move in a current position
