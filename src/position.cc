@@ -812,14 +812,12 @@ void Position::GenerateKnightMovesOnSquare(
   for (Coordinates jump : jumps) {
     Coordinates origin = square;
     origin += jump;
-    if (!WithinTheBoard(origin)) {
+    if (!WithinTheBoard(origin) || GetSquare(origin) != Piece{PieceType::kKnight, player}) {
       continue;
     }
-    if (GetSquare(origin) == Piece{PieceType::kKnight, player}) {
-      Pins pins = GetPins(square, player);
-      if (pins.vertical || pins.upward || pins.horisontal || pins.downward) {
-        continue;
-      }
+    Pins pins = GetPins(square, player);
+    if (pins.vertical || pins.upward || pins.horisontal || pins.downward) {
+      continue;
     }
   }
 };
@@ -855,6 +853,9 @@ void Position::GeneratePawnCapturesOnSquare(
   };
   for (Coordinates delta : {first_delta, second_delta}) {
     Coordinates origin = square + delta;
+    if (!WithinTheBoard(origin) || GetSquare(origin) != Piece{PieceType::kPawn, player}) {
+      continue;
+    }
     Pins pins = GetPins(origin, player);
     if (FreeInDirection(pins, delta)) {
       out.push_back({origin, square, pieces::kNone});
@@ -877,7 +878,10 @@ void Position::GenerateStraightCapturesOnSqaure(
     return;
   }
   Piece piece = GetSquare(current);
-  if (piece.type == attacker || piece.type == PieceType::kQueen) {
+  if (
+    (piece.type == attacker || piece.type == PieceType::kQueen) &&
+    piece.player == player 
+   ) {
     out.push_back({current, square, pieces::kNone});
   }
 }
