@@ -1,4 +1,4 @@
-#include "zobrist_hash.h"
+#include "src/zobrist_hash.h"
 
 #include <cstdint>
 #include <random>
@@ -35,16 +35,18 @@ ZobristHashFunction::ZobristHashFunction(uint64_t seed) {
 
 uint64_t ZobristHashFunction::HashPiece(Coordinates square, Piece piece) const {
   if (piece.player == Player::kWhite) {
-    return white_piece_tables_[static_cast<int8_t>(piece.type)-1][square.file][square.rank];
-  } else if (piece.player == Player::kBlack){
-    return black_piece_tables_[static_cast<int8_t>(piece.type)-1][square.file][square.rank];
+    auto table = white_piece_tables_[static_cast<int8_t>(piece.type)-1];
+    return table[square.file][square.rank];
+  } else if (piece.player == Player::kBlack) {
+    auto table = black_piece_tables_[static_cast<int8_t>(piece.type)-1];
+    return table[square.file][square.rank];
   } else {
     return 0ull;  // Empty squares
   }
 }
 
 uint64_t ZobristHashFunction::HashEnPessant(Coordinates square) const {
-  if (square == Coordinates{-1,-1}) {
+  if (square == Coordinates{-1, -1}) {
     return 0ull;
   }
   return en_pessant_[square.file][square.rank];
@@ -52,9 +54,13 @@ uint64_t ZobristHashFunction::HashEnPessant(Coordinates square) const {
 
 uint64_t ZobristHashFunction::HashCastles(Player player, Castle castle) const {
   if (player == Player::kWhite) {
-    return castle == Castle::kKingside ? white_castles_kingside_ : white_castles_queenside_;
+    return castle == Castle::kKingside ?
+           white_castles_kingside_ :
+           white_castles_queenside_;
   } else {
-    return castle == Castle::kKingside ? black_castles_kingside_ : black_castles_queenside_;
+    return castle == Castle::kKingside ?
+           black_castles_kingside_ :
+           black_castles_queenside_;
   }
 }
 
@@ -66,14 +72,15 @@ uint64_t ZobristHashFunction::SlowHash(const Position& position) const {
   uint64_t ret;
   for (int8_t file = 0; file < 8; ++file) {
     for (int8_t rank = 0; rank < 8; ++rank) {
-      ret ^= HashPiece({file,rank}, position.GetSquare({file, rank}));
+      ret ^= HashPiece({file, rank}, position.GetSquare({file, rank}));
     }
   }
   ret ^= HashEnPessant(position.GetEnPessant());
   for (Player player : {Player::kWhite, Player::kBlack}) {
     for (Castle castle : {Castle::kKingside, Castle::kQueenside}) {
-      if (position.GetCastlingRights(player, castle));
-      ret ^= HashCastles(player, castle);
+      if (position.GetCastlingRights(player, castle)) {
+        ret ^= HashCastles(player, castle);
+      }
     }
   }
   if (position.PlayerToMove() == Player::kBlack) {
@@ -82,19 +89,18 @@ uint64_t ZobristHashFunction::SlowHash(const Position& position) const {
   return ret;
 }
 
-ZobristHash::ZobristHash(const Position& position, const ZobristHashFunction& func):
-func_(func)
-{
+ZobristHash::ZobristHash(
+  const Position& position,
+  const ZobristHashFunction& func
+) : func_(func) {
   hash_ = func_.SlowHash(position);
-};
+}
 
-ZobristHash::ZobristHash(const ZobristHashFunction& func):
-func_(func)
-{};
+ZobristHash::ZobristHash(const ZobristHashFunction& func)
+  : func_(func) {}
 
 ZobristHash::ZobristHash(const ZobristHash& other)
-:func_(other.func_), hash_(other.hash_)
-{}
+  : func_(other.func_), hash_(other.hash_) {}
 
 uint64_t ZobristHash::Get() const {
   return hash_;

@@ -1,5 +1,5 @@
-#ifndef CHESS_ENGINE_SRC_POSITION_TABLE_
-#define CHESS_ENGINE_SRC_POSITION_TABLE_
+#ifndef SRC_POSITION_TABLE_H_
+#define SRC_POSITION_TABLE_H_
 
 #include <cstdint>
 #include <vector>
@@ -10,7 +10,7 @@ template<class T, int index_size>
 class PositionTable {
  public:
   T Get(uint64_t key) const {
-    const Entry& entry= elements_[key & mask_];
+    const Entry& entry = elements_[key & mask_];
     if (entry.key != key) {
       return T();
     } else {
@@ -29,9 +29,10 @@ class PositionTable {
     T value;
   };
   static const uint64_t mask_ = (1ull << index_size)-1;
-  std::vector<Entry> elements_ = std::vector<Entry>(1ull << index_size, {0ull, T()});
+  std::vector<Entry> elements_ =
+    std::vector<Entry>(1ull << index_size, {0ull, T()});
 };
 
-}
+}  // namespace chess_engine
 
-#endif  // CHESS_ENGINE_SRC_POSITION_TABLE_
+#endif  // SRC_POSITION_TABLE_H_

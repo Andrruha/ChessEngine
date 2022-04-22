@@ -1,13 +1,14 @@
-#ifndef CHESS_ENGINE_SRC_ENGINE_MANAGER_
-#define CHESS_ENGINE_SRC_ENGINE_MANAGER_
+#ifndef SRC_ENGINE_MANAGER_H_
+#define SRC_ENGINE_MANAGER_H_
 
 #include <chrono>
+#include <list>
 
-#include "abstract_protocol.h"
-#include "game.h"
-#include "engine.h"
-#include "fen.h"
-#include "position.h"
+#include "src/abstract_protocol.h"
+#include "src/game.h"
+#include "src/engine.h"
+#include "src/fen.h"
+#include "src/position.h"
 
 namespace chess_engine {
 
@@ -33,14 +34,14 @@ class EngineManager {
     int64_t nodes,
     const std::list<chess_engine::Move>& pv
   );
-  
+
  private:
   bool ProceedWithBatch();
 
   AbstractProtocol* protocol_;
   Engine* engine_;
 
-  Position starting_position_ = chess_engine::FenToPosition (
+  Position starting_position_ = chess_engine::FenToPosition(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
   );
 
@@ -57,4 +58,4 @@ class EngineManager {
 
 }  // namespace chess_engine
 
-#endif  // CHESS_ENGINE_SRC_ENGINE_MANAGER_
+#endif  // SRC_ENGINE_MANAGER_H_

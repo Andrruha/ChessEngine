@@ -1,4 +1,4 @@
-#include "abstract_protocol.h"
+#include "src/abstract_protocol.h"
 
 namespace chess_engine {
 
@@ -6,23 +6,33 @@ void AbstractProtocol::SetNewGameCallback(std::function<void()> callback) {
   new_game_callback_ = callback;
 }
 
-void AbstractProtocol::SetMoveRecievedCallback(std::function<void(Move)> callback) {
+void AbstractProtocol::SetMoveRecievedCallback(
+  std::function<void(Move)> callback
+) {
   move_recieved_callback_ = callback;
 }
 
-void AbstractProtocol::SetUndoRecievedCallback(std::function<void()> callback) {
+void AbstractProtocol::SetUndoRecievedCallback(
+  std::function<void()> callback
+) {
   undo_recieved_callback_ = callback;
 }
 
-void AbstractProtocol::SetSetColorCallback(std::function<void(Player)> callback) {
+void AbstractProtocol::SetSetColorCallback(
+  std::function<void(Player)> callback
+) {
   set_color_callback_ = callback;
 }
 
-void AbstractProtocol::SetSetModeCallback(std::function<void(EngineMode)> callback) {
+void AbstractProtocol::SetSetModeCallback(
+  std::function<void(EngineMode)> callback
+) {
   set_mode_callback_ = callback;
 }
 
-void AbstractProtocol::SetSetBoardCallback(std::function<void(const Position&)> callback) {
+void AbstractProtocol::SetSetBoardCallback(
+  std::function<void(const Position&)> callback
+) {
   set_board_callback_ = callback;
 }
 

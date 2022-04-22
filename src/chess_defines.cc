@@ -1,4 +1,4 @@
-#include "chess_defines.h"
+#include "src/chess_defines.h"
 
 #include <cassert>
 #include <cstdint>
@@ -88,7 +88,8 @@ bool BelongsToSegment(Segment segment, Coordinates point) {
 }
 
 bool operator==(Move first, Move second) {
-  return first.from == second.from && first.to == second.to && first.piece == second.piece;
+  return first.from == second.from &&
+    first.to == second.to && first.piece == second.piece;
 }
 
 bool operator!=(Move first, Move second) {
@@ -126,8 +127,8 @@ int8_t PawnDirection(Player player) {
 }
 
 bool WithinTheBoard(Coordinates square) {
-  return 0 <= square.file && square.file < 8 && 
-         0 <= square.rank && square.rank < 8;  
+  return 0 <= square.file && square.file < 8 &&
+         0 <= square.rank && square.rank < 8;
 }
 
 }  // namespace chess_engine

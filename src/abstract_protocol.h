@@ -1,12 +1,12 @@
-#ifndef CHESS_ENGINE_SRC_ABSTRACT_PROTOCOL_
-#define CHESS_ENGINE_SRC_ABSTRACT_PROTOCOL_
+#ifndef SRC_ABSTRACT_PROTOCOL_H_
+#define SRC_ABSTRACT_PROTOCOL_H_
 
 #include <cstdint>
 #include <functional>
 #include <list>
 
-#include "chess_defines.h"
-#include "position.h"
+#include "src/chess_defines.h"
+#include "src/position.h"
 
 namespace chess_engine {
 
@@ -47,4 +47,4 @@ class AbstractProtocol {
 
 }  // namespace chess_engine
 
-#endif  // CHESS_ENGINE_SRC_ABSTRACT_PROTOCOL_
+#endif  // SRC_ABSTRACT_PROTOCOL_H_

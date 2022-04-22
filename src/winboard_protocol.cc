@@ -1,23 +1,26 @@
-#include "winboard_protocol.h"
+#include "src/winboard_protocol.h"
 
 #include <iostream>
+#include <list>
 #include <fstream>
 #include <string>
+#include <vector>
 
-#include "fen.h"
+#include "src/fen.h"
 
 namespace chess_engine {
 
 void WinboardProtocol::ProcessCommands() {
-  // TODO(Andrey): do I need a loop here?
   std::unique_lock lock(mutex_);
-  if (commands_recieved_.wait_for(lock, std::chrono::seconds(0), [&]{return !command_queue_.empty();})) {
+  if (commands_recieved_.wait_for(
+    lock, std::chrono::seconds(0), [&]{return !command_queue_.empty();}
+  )) {
     while (!command_queue_.empty()) {
       std::string command = command_queue_.front();
       command_queue_.pop();
       std::ofstream log;
       log.open("log_protocol.txt", std::ios_base::app);
-      log << "recieved: " << command << "\n"; 
+      log << "recieved: " << command << "\n";
       log.close();
       std::vector<std::string> parts;
       int pos = -1;
@@ -53,7 +56,7 @@ void WinboardProtocol::ProcessCommands() {
         move_recieved_callback_(XBoardToMove(parts[1]));
       } else if (parts[0] == "undo") {
         undo_recieved_callback_();
-      } 
+      }
     }
   }
 }
@@ -82,15 +85,17 @@ void WinboardProtocol::DisplayInfo(
   int64_t nodes,
   const std::list<Move>& pv
 ) const {
-  std::cout << ply << " " << centipawns << " " << centiseconds << " " << nodes << " ";
-  for (chess_engine::Move move: pv) {
-    std::cout << chess_engine::MoveToXBoard(move) << " ";
+  std::cout << ply << " " << centipawns << " "
+            << centiseconds << " " << nodes << " ";
+  for (Move move : pv) {
+    std::cout << MoveToXBoard(move) << " ";
   }
   std::cout << std::endl;
 }
 
 void WinboardProtocol::SendFeatures() {
-  std::cout << "feature colors=0 playother=1 setboard=1 usermove=1 done=1" << std::endl;
+  std::cout << "feature colors=0 playother=1 setboard=1 usermove=1 done=1"
+            << std::endl;
 }
 
 }  // namespace chess_engine
