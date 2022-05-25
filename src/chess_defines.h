@@ -1,5 +1,5 @@
-#ifndef CHESS_ENGINE_SRC_CHESS_DEFINES_
-#define CHESS_ENGINE_SRC_CHESS_DEFINES_
+#ifndef SRC_CHESS_DEFINES_H_
+#define SRC_CHESS_DEFINES_H_
 
 // Contains some basic chess structs and enums to be used by the engine.
 // All code that works with the engine needs most of it.
@@ -55,9 +55,9 @@ namespace pieces {
   const Piece kBlackBishop = {PieceType::kBishop, Player::kBlack};
   const Piece kBlackQueen = {PieceType::kQueen, Player::kBlack};
   const Piece kBlackKing = {PieceType::kKing, Player::kBlack};
-}
+}  // namespace pieces
 
-const std::array<PieceType,4> kPromotionOptions = {
+const std::array<PieceType, 4> kPromotionOptions = {
   PieceType::kRook, PieceType::kKnight,
   PieceType::kBishop, PieceType::kQueen
 };
@@ -68,8 +68,8 @@ enum struct Castle {
 };
 
 struct Coordinates {
-  int8_t file;  // aka "x-coordinate" (0 corresponds to the a-file)
-  int8_t rank;  // aka "y-coordinate" (0 corresponds to the first rank)
+  int8_t file;  // Aka "x-coordinate" (0 corresponds to the a-file).
+  int8_t rank;  // Aka "y-coordinate" (0 corresponds to the first rank).
   Coordinates& operator+=(Coordinates other);
   Coordinates operator-();
 };
@@ -89,12 +89,12 @@ bool BelongsToLine(Segment line, Coordinates point);
 bool BelongsToSegment(Segment segment, Coordinates point);
 
 struct Move {
-  Coordinates from; 
+  Coordinates from;
   Coordinates to;
   Piece piece;  // Piece that moves or piece to promote to.
 };
 
-const Move kNullMove = {{-1,-1}, {-1,-1}, pieces::kNone};
+const Move kNullMove = {{-1, -1}, {-1, -1}, pieces::kNone};
 
 bool operator==(Move first, Move second);
 bool operator!=(Move first, Move second);
@@ -107,4 +107,4 @@ bool WithinTheBoard(Coordinates square);
 
 }  // namespace chess_engine
 
-#endif  // CHESS_ENGINE_SRC_CHESS_DEFINES_
+#endif  // SRC_CHESS_DEFINES_H_

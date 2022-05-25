@@ -1,10 +1,11 @@
-#include "fen.h"
-
-#include "chess_defines.h"
+#include "src/fen.h"
 
 #include <cassert>
 #include <cctype>
 #include <cstdint>
+#include <vector>
+
+#include "src/chess_defines.h"
 
 namespace chess_engine {
 
@@ -12,10 +13,10 @@ unsigned char PieceToFen(Piece piece) {
   unsigned char ret;
   switch (piece.type) {
     case PieceType::kNone:
-      return ' ';  // Return, because color doesn't make sense here
+      return ' ';  // Return, because color doesn't make sense here.
       break;
     case PieceType::kPawn:
-      ret = 'p';        
+      ret = 'p';
       break;
     case PieceType::kRook:
       ret = 'r';
@@ -33,10 +34,10 @@ unsigned char PieceToFen(Piece piece) {
       ret = 'k';
       break;
     default:
-      assert(false);  // Piece type is invalid
-      return '?';  // Return, because color is nonsensical
+      assert(false);  // Piece type is invalid.
+      return '?';  // Return, because color is nonsensical here.
   }
-  // Check if player is valid
+  // Check if player is valid.
   assert(piece.player == Player::kWhite || piece.player == Player::kBlack);
   if (piece.player == Player::kWhite) {
     ret = std::toupper(ret);
@@ -55,7 +56,7 @@ Piece FenToPiece(unsigned char fen) {
 
   switch (fen) {
     case 'p':
-      ret.type = PieceType::kPawn;      
+      ret.type = PieceType::kPawn;
       break;
     case 'r':
       ret.type = PieceType::kRook;
@@ -80,7 +81,7 @@ Piece FenToPiece(unsigned char fen) {
 }
 
 std::string CoordinatesToString(Coordinates coordinates) {
-  if (coordinates == Coordinates{-1,-1}) {
+  if (coordinates == Coordinates{-1, -1}) {
     return "-";
   }
   std::string ret = "??";
@@ -91,7 +92,7 @@ std::string CoordinatesToString(Coordinates coordinates) {
 
 Coordinates StringToCoordinates(const std::string& str) {
   if (str == "-") {
-    return {-1,-1};
+    return {-1, -1};
   }
   Coordinates ret;
   ret.file = str[0] - 'a';
@@ -118,9 +119,9 @@ Position FenToPosition(const std::string& fen) {
   int to_skip = 0;
   for (int8_t rank = 7; rank >= 0; --rank) {
     for (int8_t file = 0; file < 8; ++file) {
-      if(to_skip) {
+      if (to_skip) {
         --to_skip;
-        continue; 
+        continue;
       }
       char current = parts[0][position_index];
       if ('1' <= current && current <= '8') {
@@ -138,7 +139,7 @@ Position FenToPosition(const std::string& fen) {
   } else if (parts[1] == "b") {
     ret.SetPlayerToMove(Player::kBlack);
   } else {
-    assert(false);  // Invalid player
+    assert(false);  // Invalid player.
   }
 
   if (parts[2].find('K') == std::string::npos) {
@@ -155,11 +156,11 @@ Position FenToPosition(const std::string& fen) {
   }
 
   if (parts[3] == "-") {
-    ret.SetEnPessant({-1,-1});
+    ret.SetEnPessant({-1, -1});
   } else {
     ret.SetEnPessant(StringToCoordinates(parts[3]));
   }
-  
+
   ret.SetHalfmoveClock(std::stoi(parts[4]));
   ret.SetMoveNumber(std::stoi(parts[5]));
 
@@ -179,7 +180,7 @@ std::string PositionToFen(const Position& position) {
           counter = 0;
         }
         ret += PieceToFen(position.GetSquare({file, rank}));
-      } 
+      }
     }
     if (counter) {
       ret += '0' + counter;
@@ -239,7 +240,7 @@ std::string MoveToUci(Move move) {
   return ret;
 }
 
-// TODO(Andrey): Fix promotion in UCI
+// TODO(Andrey): Fix promotion in UCI.
 Move UciToMove(const std::string& str) {
   Move ret;
   ret.from = StringToCoordinates(str);

@@ -1,10 +1,10 @@
-#ifndef CHESS_ENGINE_SRC_COUNT_MOVES_
-#define CHESS_ENGINE_SRC_COUNT_MOVES_
+#ifndef SRC_COUNT_MOVES_H_
+#define SRC_COUNT_MOVES_H_
 
-#include "node.h"
-#include "position.h"
-#include "position_table.h"
-#include "zobrist_hash.h"
+#include "src/node.h"
+#include "src/position.h"
+#include "src/position_table.h"
+#include "src/zobrist_hash.h"
 
 namespace chess_engine {
 
@@ -15,10 +15,14 @@ struct HashEntry {
   int64_t count = -1;
 };
 
-int64_t CountMovesWithHash(const Node& node, int depth, PositionTable<HashEntry, 24> &table);
-int64_t CountMovesWithHash(const Position& pos, int depth, const ZobristHashFunction& func);
+int64_t CountMovesWithHash(
+  const Node& node, int depth, PositionTable<HashEntry, 24> *table
+);
+int64_t CountMovesWithHash(
+  const Position& pos, int depth, const ZobristHashFunction& func
+);
 
 
-}
+}  // namespace chess_engine
 
-#endif  // CHESS_ENGINE_SRC_COUNT_MOVES_
+#endif  // SRC_COUNT_MOVES_H_

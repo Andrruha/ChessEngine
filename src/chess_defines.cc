@@ -1,4 +1,4 @@
-#include "chess_defines.h"
+#include "src/chess_defines.h"
 
 #include <cassert>
 #include <cstdint>
@@ -11,7 +11,7 @@ Player Opponent(Player player) {
   } else if (player == Player::kBlack) {
     return Player::kWhite;
   }
-  assert(false);  // invalid player
+  assert(false);  // Invalid player.
   return Player::kNone;
 }
 
@@ -62,6 +62,8 @@ bool BelongsToLine(Segment line, Coordinates point) {
   Coordinates small_delta;
   small_delta.file = point.file - line.start.file;
   small_delta.rank = point.rank - line.start.rank;
+  
+  // dx_1 * dy_2 == dx_2 * dy_1
   return small_delta.file*big_delta.rank == small_delta.rank*big_delta.file;
 }
 
@@ -88,7 +90,8 @@ bool BelongsToSegment(Segment segment, Coordinates point) {
 }
 
 bool operator==(Move first, Move second) {
-  return first.from == second.from && first.to == second.to && first.piece == second.piece;
+  return first.from == second.from &&
+    first.to == second.to && first.piece == second.piece;
 }
 
 bool operator!=(Move first, Move second) {
@@ -101,7 +104,7 @@ int8_t DoubleJumpRank(Player player) {
   } else if (player == Player::kBlack) {
     return 6;
   }
-  assert(false);  // Invalid player value
+  assert(false);  // Invalid player value.
   return -1;
 }
 
@@ -111,7 +114,7 @@ int8_t PromotionRank(Player player) {
   } else if (player == Player::kBlack) {
     return 0;
   }
-  assert(false);  // Invalid player value
+  assert(false);  // Invalid player value.
   return -1;
 }
 
@@ -121,13 +124,13 @@ int8_t PawnDirection(Player player) {
   } else if (player == Player::kBlack) {
     return -1;
   }
-  assert(false);  // Invalid player value
+  assert(false);  // Invalid player value.
   return 0;
 }
 
 bool WithinTheBoard(Coordinates square) {
-  return 0 <= square.file && square.file < 8 && 
-         0 <= square.rank && square.rank < 8;  
+  return 0 <= square.file && square.file < 8 &&
+         0 <= square.rank && square.rank < 8;
 }
 
 }  // namespace chess_engine

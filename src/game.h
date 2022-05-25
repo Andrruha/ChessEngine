@@ -1,13 +1,14 @@
-#ifndef CHESS_ENGINE_SRC_GAME_
-#define CHESS_ENGINE_SRC_GAME_
+#ifndef SRC_GAME_H_
+#define SRC_GAME_H_
 
 #include <vector>
 
-#include "chess_defines.h"
-#include "position.h"
+#include "src/chess_defines.h"
+#include "src/position.h"
 
 namespace chess_engine {
 
+// Simple class to keep track of a chess game.
 class Game {
  public:
   explicit Game(const Position& starting_position);
@@ -21,4 +22,4 @@ class Game {
 
 }  // namespace chess_engine
 
-#endif  // CHESS_ENGINE_SRC_GAME_s
+#endif  // SRC_GAME_H_

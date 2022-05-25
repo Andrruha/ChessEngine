@@ -1,13 +1,14 @@
-#ifndef CHESS_ENGINE_SRC_WINBOARD_PROTOCOL_
-#define CHESS_ENGINE_SRC_WNIBOARD_PROTOCOL_
+#ifndef SRC_WINBOARD_PROTOCOL_H_
+#define SRC_WINBOARD_PROTOCOL_H_
 
 #include <condition_variable>
+#include <list>
 #include <queue>
 #include <string>
 #include <thread>
 
-#include "abstract_protocol.h"
-#include "chess_defines.h"
+#include "src/abstract_protocol.h"
+#include "src/chess_defines.h"
 
 namespace chess_engine {
 
@@ -35,4 +36,4 @@ class WinboardProtocol : public AbstractProtocol {
 
 }  // namespace chess_engine
 
-#endif  // CHESS_ENGINE_SRC_WINBOARD_PROTOCOL_
+#endif  // SRC_WINBOARD_PROTOCOL_H_

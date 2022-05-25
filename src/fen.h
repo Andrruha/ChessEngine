@@ -1,13 +1,13 @@
 // FEN (Forsyth–Edwards Notation) is a popular chess notation for describing
-// chess positions
+// chess positions.
 
-#ifndef CHESS_ENGINE_SRC_FEN
-#define CHESS_ENGINE_SRC_FEN
+#ifndef SRC_FEN_H_
+#define SRC_FEN_H_
 
 #include <string>
 
-#include "chess_defines.h"
-#include "position.h"
+#include "src/chess_defines.h"
+#include "src/position.h"
 namespace chess_engine {
 
 // In FEN the case of a letter indicates piece color.
@@ -27,6 +27,6 @@ Move UciToMove(const std::string& str);
 std::string MoveToXBoard(Move move);
 Move XBoardToMove(const std::string& str);
 
-} //  namespace chess_engine
+}  // namespace chess_engine
 
-#endif  // CHESS_ENGINE_SRC_FEN
+#endif  // SRC_FEN_H_

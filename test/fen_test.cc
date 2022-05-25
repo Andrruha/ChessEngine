@@ -2,8 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "chess_defines.h"
-#include "fen.h"
+#include "src/chess_defines.h"
+#include "src/fen.h"
 
 TEST_CASE("Fen handles piece names correctly", "[fen]") {
   std::vector<unsigned char> fens{

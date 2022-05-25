@@ -1,8 +1,10 @@
-#include "node.h"
+#include "src/node.h"
 
-#include "chess_defines.h"
-#include "position.h"
-#include "zobrist_hash.h"
+#include <vector>
+
+#include "src/chess_defines.h"
+#include "src/position.h"
+#include "src/zobrist_hash.h"
 
 namespace chess_engine {
 
@@ -11,7 +13,7 @@ Node::Node(const ZobristHashFunction& hash_func):
 {}
 
 Node::Node(const Position& position, const ZobristHashFunction& func):
-  position_(position), hash_(position, func) 
+  position_(position), hash_(position, func)
 {}
 
 bool Node::IsCheck() const {
@@ -50,14 +52,16 @@ std::vector<Move> Node::GetLegalMoves() const {
   return position_.GetLegalMoves();
 }
 
-std::vector<Move> Node::GetCapturesOnSquare(Coordinates square, Player player) const {
+std::vector<Move> Node::GetCapturesOnSquare(
+  Coordinates square, Player player
+) const {
   return position_.GetCapturesOnSquare(square, player);
 }
 
 void Node::MakeMove(Move move) {
-  HashMove(hash_, move);
+  HashMove(&hash_, move);
   if (move == kNullMove) {
-    last_capture_ = {-1,-1};
+    last_capture_ = {-1, -1};
     position_.PassTheTurn();
     return;
   }
@@ -69,7 +73,7 @@ void Node::MakeMove(Move move) {
   position_.MakeMove(move);
 }
 
-void Node::HashMove(ZobristHash& hash, Move move) const {
+void Node::HashMove(ZobristHash* hash, Move move) const {
   if (move.piece == pieces::kNone) {
     move.piece = GetSquare(move.from);
   }
@@ -81,98 +85,116 @@ void Node::HashMove(ZobristHash& hash, Move move) const {
 
   bool normal_move = true;
 
-  // En pessant
+  // En pessant.
   if (move.to == en_pessant && move.piece.type == PieceType::kPawn) {
     Coordinates taken = move.to;
     taken.rank -= dir;
-    hash.ToggleSquare(taken, {PieceType::kPawn, Opponent(to_move)});
-    hash.ToggleSquare(move.from, {PieceType::kPawn, to_move});
-    hash.ToggleSquare(move.to, {PieceType::kPawn, to_move});
+    hash->ToggleSquare(taken, {PieceType::kPawn, Opponent(to_move)});
+    hash->ToggleSquare(move.from, {PieceType::kPawn, to_move});
+    hash->ToggleSquare(move.to, {PieceType::kPawn, to_move});
     normal_move = false;
   }
-  
-  // Castling
+
+  // Castling.
   if (move.piece.type == PieceType::kKing) {
-    if (move.to == move.from + Coordinates{2,0}) {
-      hash.ToggleSquare(move.from, {PieceType::kKing, to_move});
-      hash.ToggleSquare(move.from + Coordinates{3,0}, {PieceType::kRook, to_move});
-      hash.ToggleSquare(move.to, {PieceType::kKing, to_move});
-      hash.ToggleSquare(move.to + Coordinates{-1,0}, {PieceType::kRook, to_move});
+    if (move.to == move.from + Coordinates{2, 0}) {
+      hash->ToggleSquare(
+        move.from, {PieceType::kKing, to_move}
+      );
+      hash->ToggleSquare(
+        move.from + Coordinates{3, 0}, {PieceType::kRook, to_move}
+      );
+      hash->ToggleSquare(
+        move.to, {PieceType::kKing, to_move}
+      );
+      hash->ToggleSquare(
+        move.to + Coordinates{-1, 0}, {PieceType::kRook, to_move}
+      );
       normal_move = false;
     }
-    if (move.to == move.from + Coordinates{-2,0}) {
-      hash.ToggleSquare(move.from, {PieceType::kKing, to_move});
-      hash.ToggleSquare(move.from + Coordinates{-4,0}, {PieceType::kRook, to_move});
-      hash.ToggleSquare(move.to, {PieceType::kKing, to_move});
-      hash.ToggleSquare(move.to + Coordinates{1,0}, {PieceType::kRook, to_move});
+    if (move.to == move.from + Coordinates{-2, 0}) {
+      hash->ToggleSquare(
+        move.from, {PieceType::kKing, to_move}
+      );
+      hash->ToggleSquare(
+        move.from + Coordinates{-4, 0}, {PieceType::kRook, to_move}
+      );
+      hash->ToggleSquare(
+        move.to, {PieceType::kKing, to_move}
+      );
+      hash->ToggleSquare(
+        move.to + Coordinates{1, 0}, {PieceType::kRook, to_move}
+      );
       normal_move = false;
     }
   }
 
   if (normal_move) {
     Piece taken = position_.GetSquare(move.to);
-    hash.ToggleSquare(move.from, move.piece);
-    hash.ToggleSquare(move.to, taken);
-    hash.ToggleSquare(move.to, move.piece);
+    hash->ToggleSquare(move.from, move.piece);
+    hash->ToggleSquare(move.to, taken);
+    hash->ToggleSquare(move.to, move.piece);
   }
 
-  // Update en-pessant
-  hash.ToggleEnPessant(en_pessant);
+  // Update en-pessant.
+  hash->ToggleEnPessant(en_pessant);
   if (
-    move.piece.type == PieceType::kPawn && 
+    move.piece.type == PieceType::kPawn &&
     move.to.rank - move.from.rank == dir*2
   ) {
     Coordinates new_en_pessant = move.from;
     new_en_pessant.rank += dir;
-    hash.ToggleEnPessant(new_en_pessant);
+    hash->ToggleEnPessant(new_en_pessant);
   }
 
-  // Update castling rights
-  if (move.from == Coordinates{0,0} || move.to == Coordinates{0,0}) {
+  // Update castling rights due to rook moves/captures.
+  if (move.from == Coordinates{0, 0} || move.to == Coordinates{0, 0}) {
     if (position_.GetCastlingRights(Player::kWhite, Castle::kQueenside)) {
-      hash.ToggleCastlingRights(Player::kWhite, Castle::kQueenside);
+      hash->ToggleCastlingRights(Player::kWhite, Castle::kQueenside);
     }
   }
-  if (move.from == Coordinates{7,0} || move.to == Coordinates{7,0}) {
+  if (move.from == Coordinates{7, 0} || move.to == Coordinates{7, 0}) {
     if (position_.GetCastlingRights(Player::kWhite, Castle::kKingside)) {
-      hash.ToggleCastlingRights(Player::kWhite, Castle::kKingside);
+      hash->ToggleCastlingRights(Player::kWhite, Castle::kKingside);
     }
   }
-  if (move.from == Coordinates{0,7} || move.to == Coordinates{0,7}) {
+  if (move.from == Coordinates{0, 7} || move.to == Coordinates{0, 7}) {
     if (position_.GetCastlingRights(Player::kBlack, Castle::kQueenside)) {
-      hash.ToggleCastlingRights(Player::kBlack, Castle::kQueenside);
+      hash->ToggleCastlingRights(Player::kBlack, Castle::kQueenside);
     }
   }
-  if (move.from == Coordinates{7,7} || move.to == Coordinates{7,7}) {
+  if (move.from == Coordinates{7, 7} || move.to == Coordinates{7, 7}) {
     if (position_.GetCastlingRights(Player::kBlack, Castle::kKingside)) {
-      hash.ToggleCastlingRights(Player::kBlack, Castle::kKingside);
+      hash->ToggleCastlingRights(Player::kBlack, Castle::kKingside);
     }
   }
 
+
+  // Update castling rights due to king moves.
   if (move.piece == pieces::kWhiteKing) {
     if (position_.GetCastlingRights(Player::kWhite, Castle::kQueenside)) {
-      hash.ToggleCastlingRights(Player::kWhite, Castle::kQueenside);
+      hash->ToggleCastlingRights(Player::kWhite, Castle::kQueenside);
     }
     if (position_.GetCastlingRights(Player::kWhite, Castle::kKingside)) {
-      hash.ToggleCastlingRights(Player::kWhite, Castle::kKingside);
+      hash->ToggleCastlingRights(Player::kWhite, Castle::kKingside);
     }
   }
 
   if (move.piece == pieces::kBlackKing) {
     if (position_.GetCastlingRights(Player::kBlack, Castle::kQueenside)) {
-      hash.ToggleCastlingRights(Player::kBlack, Castle::kQueenside);
+      hash->ToggleCastlingRights(Player::kBlack, Castle::kQueenside);
     }
     if (position_.GetCastlingRights(Player::kBlack, Castle::kKingside)) {
-      hash.ToggleCastlingRights(Player::kBlack, Castle::kKingside);
+      hash->ToggleCastlingRights(Player::kBlack, Castle::kKingside);
     }
   }
 
-  hash.PassTheTurn();
+  hash->PassTheTurn();
 }
 
 ZobristHash Node::HashAfterMove(Move move) const {
   ZobristHash ret = hash_;
-  HashMove(ret, move);
+  HashMove(&ret, move);
   return ret;
 }
 
@@ -196,7 +218,8 @@ void Node::SetCastlingRights(Player player, Castle castle, bool value) {
   if (position_.GetCastlingRights(player, castle) == value) {
     return;
   }
-  hash_.ToggleCastlingRights(player, castle);  // we now know that the rights have changed
+  // We now know that the rights have changed.
+  hash_.ToggleCastlingRights(player, castle);
   position_.SetCastlingRights(player, castle, value);
 }
 
@@ -249,7 +272,7 @@ ZobristHash Node::GetHash() const {
 
 void Node::SetPosition(const Position& position) {
   position_ = position;
-  last_capture_ = {-1,-1};
+  last_capture_ = {-1, -1};
   hash_.RecalculateForPosition(position);
 }
 
@@ -257,4 +280,4 @@ const Position& Node::GetPosition() const {
   return position_;
 }
 
-}
+}  // namespace chess_engine
