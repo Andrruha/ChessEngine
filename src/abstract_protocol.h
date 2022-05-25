@@ -15,11 +15,17 @@ enum struct EngineMode {
   kPlay = 1,
   kAnalyse = 2
 };
+
+// Handles interaction with protocols, such as XBoard, UCI
+// or possibly my own UI.
 class AbstractProtocol {
  public:
+  // Process recieved commands, call corresponding callbacks.
   virtual void ProcessCommands() = 0;
+  // Start recieving commands.
   virtual void StartInputLoop() = 0;
 
+  // Send an engine move via protocol.
   virtual void MakeMove(Move move) = 0;
   virtual void DisplayInfo(
     int16_t ply,

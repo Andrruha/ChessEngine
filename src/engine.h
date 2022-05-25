@@ -22,19 +22,22 @@ class Engine {
   int32_t GetEvaluation(int16_t min_depth = 0);
   Move GetBestMove(int16_t min_depth = 0);
 
+  // Run batch search.
   void StartSearch();
 
   void SetBatchSize(int64_t size);
-  // this function is called back every time the batch is processed
-  // or new depth is reached
-  // and must return whether engine should continue
+  // Set the function to be called back every time the batch is processed
+  // or new depth is reached. Must return whether engine should continue
+  // the search.
   void SetProceedWithBatchCallback(std::function<bool()> value);
-  // this function is called back to display progress
+  // Set the function to be called back to display progress.
   void SetReportProgressCallback(
     std::function<void(int16_t, int32_t, int64_t, std::list<Move>)> value
   );
 
   void MakeMove(Move move);
+
+  // Evaluate the position without recursive calls.
   int32_t SimpleEvaluate(const Node& node);
 
   void SetPosition(const Position& position);
@@ -92,7 +95,7 @@ class Engine {
   std::vector<std::pair<Move, Move>> cut_moves =
     std::vector<std::pair<Move, Move>>(max_depth_, {kNullMove, kNullMove});
 
-  // Batch evaluation
+  // Batch evaluation.
   int64_t batch_size_ = -1;
   int64_t processed_in_the_batch_;
   bool proceed_with_batch_value_ = true;

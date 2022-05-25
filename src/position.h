@@ -11,14 +11,14 @@ namespace chess_engine {
 
 // One of the central classes.
 // Responsible for keeping track of the board state,
-// generating legal moves, checking for checkmate or stalemate
+// generating legal moves, checking for checkmate or stalemate.
 class Position {
  public:
   bool IsCheck() const;
   bool IsCheckmate() const;
   bool IsStalemate() const;
 
-  // whose turn it is
+  // Whose turn it is.
   Player PlayerToMove() const;
   void SetPlayerToMove(Player player);
   void PassTheTurn();
@@ -29,18 +29,18 @@ class Position {
   ) const;
 
   bool MoveIsLegal(Move move) const;
-  // If function returns true then move is definitely a check
-  // If checking move is castling or a capture might return false
+  // If function returns true then move is definitely a check.
+  // If checking move is castling or a capture might return false.
   bool MoveIsCheckFast(Move move) const;
 
-  // doesn't check for the move legality
+  // Makes a move, without leglity checks.
   void MakeMove(Move move);
 
   Piece GetSquare(int file, int rank) const;
   Piece GetSquare(Coordinates square) const;
   void SetSquare(Coordinates square, Piece piece);
 
-  // Castling works correctly, if rooks and kings are on the normal squares
+  // Castling works correctly, if rooks and kings are on the normal squares.
   bool GetCastlingRights(Player player, Castle castle) const;
   void SetCastlingRights(Player player, Castle castle, bool value);
 
@@ -55,7 +55,7 @@ class Position {
 
   Coordinates GetKing(Player player) const;
 
-  // The amount of checks on player is in (only 0, 1 or 2 are possible)
+  // The amount of checks player is in (only 0, 1 or 2 are possible).
   int8_t GetChecks(Player player) const;
   int8_t GetAttacksByPlayer(Coordinates square, Player player) const;
 
@@ -100,7 +100,7 @@ class Position {
     std::vector<Move>& out
   ) const;
 
-  // this will only promote to queen, because it's used in a quiescence search
+  // This will only promote to queen, because it's used in a quiescence search.
   void GeneratePawnCapturesOnSquare(
     Coordinates square,
     Player player,
@@ -146,7 +146,7 @@ class Position {
 
   Attacks GetAttacks(Coordinates square) const;
 
-  // Returns AttackInfo for the delayed update
+  // Returns AttackInfo for the delayed update.
   AttackInfo UpdateAttacks(
     Coordinates square,
     Piece piece,
@@ -162,7 +162,7 @@ class Position {
     Attacks delta
   );
 
-  // Returns AttackInfo for the second wave
+  // Returns AttackInfo for the second wave.
   void UpdateStraightAttacks(
     Coordinates square,
     AttackInfo attack_delta,
@@ -170,7 +170,7 @@ class Position {
   );
 
   void UpdateCheckSegment();
-  // Add/remove attacks and pins in a given direction
+  // Add/remove attacks and pins in a given direction.
   // 'attack_delta' says if we should add or remove attacks.
   // 'attacker' is a piece that attacks in a give directions besides the queen.
   void AttackDirection(
@@ -180,7 +180,7 @@ class Position {
     Attacks checking_square_delta
   );
 
-  // Do some (not all) legality checks and push the move to leagal_moves_
+  // Do some (not all) legality checks and push the move to leagal_moves_.
   void PushLegalMove(Move move) const;
 
   Player to_move_ = Player::kWhite;
@@ -198,11 +198,11 @@ class Position {
   Segment check_segment_ = {{-1, -1}, {-1, -1}};
 
   std::array<std::array<Piece, 8>, 8> board_ = {};
-  // total attacks on a square
+  // Total attacks on a square.
   std::array<std::array<Attacks, 8>, 8> attacks_ = {};
-  // for pin calculation
+  // For pin calculation.
   std::array<std::array<AttackInfo, 8>, 8> directed_attacks_ = {};
-  // where queen, bishops or rooks can check from
+  // Where queen, bishops or rooks can check from.
   std::array<std::array<AttackInfo, 8>, 8> checking_squares_ = {};
 
   mutable bool moves_generated_ = false;

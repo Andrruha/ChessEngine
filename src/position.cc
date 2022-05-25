@@ -44,7 +44,7 @@ void Position::MakeMove(Move move) {
     move.piece = GetSquare(move.from);
   }
 
-  // If move is legal it deals with all checks
+  // If move is legal it deals with all checks.
   check_segment_ = {{-1, -1}, {-1, -1}};
   if (
     GetSquare(move.from).type == PieceType::kPawn ||
@@ -55,7 +55,7 @@ void Position::MakeMove(Move move) {
     ++halfmove_clock_;
   }
 
-  // En pessant
+  // En pessant.
   int8_t dir = PawnDirection(to_move_);
   if (move.to == en_pessant_ && move.piece.type == PieceType::kPawn) {
     Coordinates taken = move.to;
@@ -66,7 +66,7 @@ void Position::MakeMove(Move move) {
     halfmove_clock_ = 0;
   }
 
-  // Castling
+  // Castling.
   if (move.piece.type == PieceType::kKing) {
     if (move.to == move.from + Coordinates{2, 0}) {
       SetSquare(move.from, pieces::kNone);
@@ -82,11 +82,11 @@ void Position::MakeMove(Move move) {
     }
   }
 
-  // Checks and pins are updated inside the SetSquare function
+  // Checks and pins are updated inside the SetSquare function.
   SetSquare(move.from, pieces::kNone);
   SetSquare(move.to, move.piece);
 
-  // Update en-pessant
+  // Update en-pessant.
   if (
     move.piece.type == PieceType::kPawn &&
     move.to.rank - move.from.rank == dir*2
@@ -98,7 +98,7 @@ void Position::MakeMove(Move move) {
     SetEnPessant({-1, -1});
   }
 
-  // Update castling rights
+  // Update castling rights due to rook moves/captures.
   if (move.from == Coordinates{0, 0} || move.to == Coordinates{0, 0}) {
     SetCastlingRights(Player::kWhite, Castle::kQueenside, false);
   }
@@ -112,7 +112,7 @@ void Position::MakeMove(Move move) {
     SetCastlingRights(Player::kBlack, Castle::kKingside, false);
   }
 
-
+  // Upadate castling right due to king moves.
   if (move.piece == pieces::kWhiteKing) {
     SetCastlingRights(Player::kWhite, Castle::kQueenside, false);
     SetCastlingRights(Player::kWhite, Castle::kKingside, false);
@@ -174,9 +174,11 @@ bool Position::MoveIsCheckFast(Move move) const {
         return true;
       }
       return false;
-      // We assume promotions always happen on the back rank
+      // We assume promotions always happen on the back rank.
     break;
     case (PieceType::kRook):
+      // Don't need to check the direction of the pin,
+      // because we assume the position is legal.
       return pin || rook_check;
     break;
     case (PieceType::kKnight):
@@ -197,10 +199,10 @@ Piece Position::GetSquare(Coordinates square) const {
 }
 
 void Position::SetSquare(Coordinates square, Piece piece) {
-  // Nothing -> Nothing - do nothing
-  // Nothing -> Piece - add attacks, block
-  // Piece -> Nothing - remove attacks, add discoveries
-  // Piece -> Piece - remove attackes, add attacks
+  // Nothing -> Nothing - do nothing.
+  // Nothing -> Piece - add attacks, block.
+  // Piece -> Nothing - remove attacks, add discoveries.
+  // Piece -> Piece - remove attacks, add attacks.
 
   Piece old_piece = GetSquare(square);
 
@@ -211,6 +213,8 @@ void Position::SetSquare(Coordinates square, Piece piece) {
     return;
   }
 
+  // Straight attacks are not processed right away in UpadateAttacks function
+  // Insteaded they are stored to be processed later.
   AttackInfo delayed_attacks = {};
 
   if (old_piece != pieces::kNone) {
@@ -236,7 +240,7 @@ void Position::SetSquare(Coordinates square, Piece piece) {
         ++blocked_for_black;
         --black_king_factor;
       } else {
-        assert(false);  // Invalid player
+        assert(false);  // Invalid player.
       }
     } else {
       ++blocked_for_white;
@@ -256,7 +260,7 @@ void Position::SetSquare(Coordinates square, Piece piece) {
         ++black_king_factor;
         black_king_ = square;
       } else {
-        assert(false);  // Invalid player
+        assert(false);  // Invalid player.
       }
     } else {
       --blocked_for_white;
@@ -270,10 +274,12 @@ void Position::SetSquare(Coordinates square, Piece piece) {
   AttackInfo directed_attacks = directed_attacks_[square.file][square.rank];
   AttackInfo checking_squares = checking_squares_[square.file][square.rank];
 
+  // Include blocking/discoveries when updating straight attacks.
   directed_attacks.MultiplyPlayerAttacks(Player::kWhite, blocked_for_white);
   directed_attacks.MultiplyPlayerAttacks(Player::kBlack, blocked_for_black);
   directed_attacks += delayed_attacks;
 
+  // Include checking square information.
   king_attacks.MultiplyPlayerAttacks(Player::kWhite, white_king_factor);
   king_attacks.MultiplyPlayerAttacks(Player::kBlack, black_king_factor);
   checking_squares *= blocked;
@@ -301,7 +307,7 @@ bool Position::GetCastlingRights(Player player, Castle castle) const {
       return black_castle_queenside_;
     }
   }
-  assert(false);  // Invalid player or castling side
+  assert(false);  // Invalid player or castling side.
   return false;
 }
 
@@ -319,7 +325,7 @@ void Position::SetCastlingRights(Player player, Castle castle, bool value) {
       black_castle_queenside_ = value;
     }
   } else {
-    assert(false);  // Invalid player or castling side
+    assert(false);  // Invalid player or castling side.
   }
   moves_generated_ = false;
 }
@@ -355,7 +361,7 @@ Coordinates Position::GetKing(Player player) const {
   } else if (player == Player::kBlack) {
     return black_king_;
   }
-  assert(false);  // Invalid player
+  assert(false);  // Invalid player.
   return {-1, -1};
 }
 
@@ -370,9 +376,10 @@ Position::AttackInfo Position::UpdateAttacks(
   } else if (piece.player == Player::kBlack) {
     basic_attacks = {0, 1};
   } else {
-    assert(false);  // Invalid player
+    assert(false);  // Invalid player.
   }
   basic_attacks *= delta;
+  // Some of the attacks are returned to be processed later.
   AttackInfo straight_attacks = {};
   switch (piece.type) {
     case (PieceType::kPawn):
@@ -408,7 +415,7 @@ Position::AttackInfo Position::UpdateAttacks(
       UpdateKingAttacks(square, basic_attacks);
     break;
     default:
-      assert(false);  // Invalid piece
+      assert(false);  // Invalid piece.
     break;
   }
   return straight_attacks;
@@ -510,7 +517,7 @@ int8_t Position::GetAttacksByPlayer(Coordinates square, Player player) const {
   } else if (player == Player::kBlack) {
     return GetAttacks(square).by_black;
   }
-  assert(false);  // Invalid player
+  assert(false);  // Invalid player.
   return 0;
 }
 
@@ -520,7 +527,7 @@ int8_t Position::GetChecks(Player player) const {
   } else if (player == Player::kBlack) {
     return GetAttacks(black_king_).by_white;
   }
-  assert(false);  // Invalid player
+  assert(false);  // Invalid player.
   return 0;
 }
 
@@ -542,7 +549,7 @@ void Position::GenerateMoves() const {
       bool pin =
         pins.horisontal || pins.vertical || pins.upward || pins.downward;
 
-      // directions the piece can move in
+      // Directions the piece can move in.
       bool vertical_free = !pins.horisontal && !pins.upward && !pins.downward;
       bool horisontal_free = !pins.vertical && !pins.upward && !pins.downward;
       bool upward_free = !pins.horisontal && !pins.vertical && !pins.downward;
@@ -550,8 +557,8 @@ void Position::GenerateMoves() const {
 
       int8_t dir = PawnDirection(to_move_);
 
-      // if we are not in check we should be carefull to not check
-      // our king by moving pinned piece
+      // If we are not in check we should be carefull to not check
+      // our king by moving pinned piece.
 
       int8_t checks = GetChecks(to_move_);
 
@@ -621,7 +628,7 @@ void Position::GenerateMoves() const {
           GenerateKingMoves({file, rank});
         break;
         default:
-          assert(false);  // Invalid piece
+          assert(false);  // Invalid piece.
         break;
       }
     }
@@ -669,7 +676,7 @@ void Position::GenerateKingMoves(Coordinates original_square) const {
       }
     }
   }
-  // TODO(Andrey): castling
+  // TODO(Andrey): Castling.
 }
 
 void Position::GenerateStraightMoves(Coordinates original_square,
@@ -694,7 +701,7 @@ void Position::GeneratePawnPushes(Coordinates original_square) const {
   Coordinates destination = original_square;
   destination.rank += dir;
   if (!WithinTheBoard(destination)) {
-    return;  // 1-square push outside the board -> 2-square push is too
+    return;  // 1-square push outside the board -> 2-square push is too.
   }
   if (GetSquare(destination) == pieces::kNone) {
     if (destination.rank != PromotionRank(to_move_)) {
@@ -710,7 +717,7 @@ void Position::GeneratePawnPushes(Coordinates original_square) const {
         return;
       }
       if (GetSquare(destination) == pieces::kNone) {
-        // implicitly using the size of the board
+        // Implicitly using the size of the board.
         PushLegalMove({original_square, destination, pieces::kNone});
       }
     }
@@ -731,10 +738,10 @@ void Position::GeneratePawnCaptures(
     GetSquare(destination).player != Opponent(to_move_) &&
     en_pessant_ != destination
   ) {
-    return;  // nothing to capture
+    return;  // Nothing to capture.
   }
 
-  // En pessant is annoying, because it removes 2 pawn from 1 rank
+  // En pessant is annoying, because it removes 2 pawn from 1 rank.
   if (en_pessant_ == destination) {
     Piece first_piece = pieces::kNone;
     Coordinates current = original_square;
@@ -771,6 +778,7 @@ void Position::GeneratePawnCaptures(
       return;
     }
   }
+  // All of that was en-pessant.
 
   if (destination.rank != PromotionRank(to_move_)) {
     PushLegalMove({
@@ -916,7 +924,7 @@ void Position::GeneratePawnCapturesOnSquare(
     std::vector<Move>& out
 ) const {
   if (square == en_pessant_) {
-    return;  // TODO(Andrey): deal with en pessant
+    return;  // TODO(Andrey): Deal with en pessant.
   }
   int8_t dir = PawnDirection(player);
   Coordinates first_delta = {
@@ -990,7 +998,7 @@ void Position::AttackDirection(
         attack_delta.by_black = 0;
         directed_delta.MultiplyPlayerAttacks(Player::kBlack, 0);
       }
-      directed_king_delta = {};  // set all members to 0
+      directed_king_delta = {};  // Set all members to 0.
     }
     current += delta;
   }
@@ -999,13 +1007,13 @@ void Position::AttackDirection(
 void Position::UpdateCheckSegment() {
   int8_t checks = GetChecks(to_move_);
   if (checks != 1) {
-    return;  // no checks - no need to worry, double check - run
+    return;  // No checks - no need to worry, double check - run.
   }
   Coordinates king = GetKing(to_move_);
   Coordinates current = king;
   Coordinates delta;
   AttackInfo attacks_on_king = directed_attacks_[current.file][current.rank];
-  // Member pointer to a member, idndicating opponnts atacks
+  // Member pointer to a member, indicating opponnts atacks.
   int8_t Attacks::*by_opponent = (
     to_move_ == Player::kWhite ? &Attacks::by_black : &Attacks::by_white
   );
@@ -1027,7 +1035,7 @@ void Position::UpdateCheckSegment() {
   } else if (attacks_on_king.up_left.*by_opponent > 0) {
     delta = {1, -1};
   } else {
-    return;  // Must've been checked by a knight or a pawn
+    return;  // Must've been checked by a knight or a pawn.
   }
   current += delta;
   Piece current_piece = GetSquare(current);
@@ -1043,7 +1051,7 @@ Position::Pins Position::GetPins(Coordinates square, Player player) const {
   AttackInfo attacks = directed_attacks_[square.file][square.rank];
   AttackInfo king_attacks = checking_squares_[square.file][square.rank];
 
-  // Member pointers to avoid ifs and code duplication
+  // Member pointers to avoid ifs and code duplication.
   int8_t Attacks::*by_player = (
     player == Player::kWhite ? &Attacks::by_white : &Attacks::by_black
   );
@@ -1084,7 +1092,7 @@ bool Position::FreeInDirection(Pins pins, Coordinates delta) {
   } else if (delta == Coordinates{1, -1} || delta == Coordinates{-1, 1}) {
     return !pins.vertical && !pins.upward && !pins.horisontal;
   }
-  assert(false);  // Invalid delta
+  assert(false);  // Invalid delta.
   return true;
 }
 
@@ -1100,7 +1108,7 @@ void Position::PushLegalMove(Move move) const {
         legal_moves_.push_back(move);
       }
     } else {
-      assert(false);  // Ivalid player
+      assert(false);  // Ivalid player.
     }
   } else {
     if (!GetChecks(to_move_) || BelongsToSegment(check_segment_, move.to)) {
@@ -1154,7 +1162,7 @@ void Position::AttackInfo::SetByDelta(Coordinates delta, Attacks value) {
 }
 
 void Position::AttackInfo::MultiplyPlayerAttacks(Player player, int8_t factor) {
-  // Memeber pointer to avoid ifs and code duplication
+  // Memeber pointer to avoid ifs and code duplication.
   int8_t Attacks::*by_player =
     player == Player::kWhite ? &Attacks::by_white : &Attacks::by_black;
   up.*by_player *= factor;

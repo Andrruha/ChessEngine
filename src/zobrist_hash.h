@@ -9,6 +9,8 @@
 
 namespace chess_engine {
 
+// Calculate alculating Zobrist hash, for individual pieces/squares,
+// position features, or the entire position. 
 class ZobristHashFunction {
  public:
   explicit ZobristHashFunction(uint64_t seed);
@@ -30,6 +32,8 @@ class ZobristHashFunction {
   uint64_t turn_;
 };
 
+// Represents zobrist hash of a position, and allows to incrementtally 
+// calculate it.
 class ZobristHash{
  public:
   explicit ZobristHash(const ZobristHashFunction& func);

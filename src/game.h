@@ -8,6 +8,7 @@
 
 namespace chess_engine {
 
+// Simple class to keep track of a chess game.
 class Game {
  public:
   explicit Game(const Position& starting_position);

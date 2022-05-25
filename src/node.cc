@@ -85,7 +85,7 @@ void Node::HashMove(ZobristHash* hash, Move move) const {
 
   bool normal_move = true;
 
-  // En pessant
+  // En pessant.
   if (move.to == en_pessant && move.piece.type == PieceType::kPawn) {
     Coordinates taken = move.to;
     taken.rank -= dir;
@@ -95,7 +95,7 @@ void Node::HashMove(ZobristHash* hash, Move move) const {
     normal_move = false;
   }
 
-  // Castling
+  // Castling.
   if (move.piece.type == PieceType::kKing) {
     if (move.to == move.from + Coordinates{2, 0}) {
       hash->ToggleSquare(
@@ -136,7 +136,7 @@ void Node::HashMove(ZobristHash* hash, Move move) const {
     hash->ToggleSquare(move.to, move.piece);
   }
 
-  // Update en-pessant
+  // Update en-pessant.
   hash->ToggleEnPessant(en_pessant);
   if (
     move.piece.type == PieceType::kPawn &&
@@ -147,7 +147,7 @@ void Node::HashMove(ZobristHash* hash, Move move) const {
     hash->ToggleEnPessant(new_en_pessant);
   }
 
-  // Update castling rights
+  // Update castling rights due to rook moves/captures.
   if (move.from == Coordinates{0, 0} || move.to == Coordinates{0, 0}) {
     if (position_.GetCastlingRights(Player::kWhite, Castle::kQueenside)) {
       hash->ToggleCastlingRights(Player::kWhite, Castle::kQueenside);
@@ -169,6 +169,8 @@ void Node::HashMove(ZobristHash* hash, Move move) const {
     }
   }
 
+
+  // Update castling rights due to king moves.
   if (move.piece == pieces::kWhiteKing) {
     if (position_.GetCastlingRights(Player::kWhite, Castle::kQueenside)) {
       hash->ToggleCastlingRights(Player::kWhite, Castle::kQueenside);
@@ -216,9 +218,8 @@ void Node::SetCastlingRights(Player player, Castle castle, bool value) {
   if (position_.GetCastlingRights(player, castle) == value) {
     return;
   }
-  // we now know that the rights have changed
+  // We now know that the rights have changed.
   hash_.ToggleCastlingRights(player, castle);
-
   position_.SetCastlingRights(player, castle, value);
 }
 

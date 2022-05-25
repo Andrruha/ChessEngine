@@ -61,7 +61,6 @@ void Engine::SetReportProgressCallback(
 void Engine::MakeMove(Move move) {
   no_return_table_.Set(root_.GetHash(), true);
   root_.MakeMove(move);
-  // root_info_ = transposition_table_.Get(root_.GetHash());
   root_info_ = NodeInfo();
 }
 
@@ -76,6 +75,7 @@ const Position& Engine::GetPosition() const {
 }
 
 int32_t Engine::SimpleEvaluate(const Node& node) {
+  // TODO(Andrey): Better evaluation function.
   int32_t ret = 0;
   Player to_move = node.PlayerToMove();
   Player opponent = Opponent(to_move);
@@ -87,6 +87,7 @@ int32_t Engine::SimpleEvaluate(const Node& node) {
   int32_t opponents_king_denominator = 0;
   for (int8_t file = 0; file < 8; ++file) {
     for (int8_t rank = 0; rank < 8; ++rank) {
+      // King safety.
       int8_t king_distance = DistanceSquared(king, {file, rank});
       if (king_distance <= 2) {
         if (!node.GetAttacksByPlayer({file, rank}, opponent)) {
@@ -103,8 +104,12 @@ int32_t Engine::SimpleEvaluate(const Node& node) {
         }
         ++opponents_king_denominator;
       }
+
+      // Board control.
       ret += node.GetAttacksByPlayer({file, rank}, to_move);
       ret -= node.GetAttacksByPlayer({file, rank}, opponent);
+
+      // Material.
       Piece piece = node.GetSquare({file, rank});
       if (piece != pieces::kNone) {
         ret += piece.player == to_move?
@@ -145,7 +150,10 @@ int32_t Engine::GetLongestCheckmate() {
 void Engine::SortMoves(
   std::vector<Move>* moves, const Node& node, int16_t ply
 ) {
+  // TODO(Andrey): Might be faster to use std::sort at this point.
   int insert_index = 0;
+
+  // Old best move.
   NodeInfo old_info = transposition_table_.Get(node.GetHash());
   for (
     int read_index = insert_index;
@@ -158,6 +166,7 @@ void Engine::SortMoves(
     }
   }
 
+  // PV Move.
   if (static_cast<int>(principal_variation_.size()) > ply) {
     auto pv_iterator = principal_variation_.begin();
     std::advance(pv_iterator, ply);
@@ -174,6 +183,7 @@ void Engine::SortMoves(
     }
   }
 
+  // Cut moves.
   for (
     int read_index = insert_index;
     read_index < static_cast<int>(moves->size());
@@ -187,6 +197,8 @@ void Engine::SortMoves(
       ++insert_index;
     }
   }
+
+  // Some of the checks.
   for (
     int read_index = insert_index;
     read_index < static_cast<int>(moves->size());
@@ -197,6 +209,8 @@ void Engine::SortMoves(
       ++insert_index;
     }
   }
+
+  // Captures.
   for (
     int read_index = insert_index;
     read_index < static_cast<int>((*moves).size());
@@ -250,7 +264,7 @@ Engine::NodeInfo Engine::RunSearch(
       legal_moves = node.GetCapturesOnSquare(
         node.GetLastCapture(), node.PlayerToMove()
       );
-      legal_moves.push_back(kNullMove);  // hack for now
+      legal_moves.push_back(kNullMove);  // Hack for now.
     } else {
       return {0, NodeType::kPV, SimpleEvaluate(node), kNullMove};
     }
@@ -259,19 +273,20 @@ Engine::NodeInfo Engine::RunSearch(
   Move best_move = legal_moves[0];
   int32_t eval = lowest_eval_;
   NodeType type = NodeType::kFailLow;
-  std::list<Move> principal_variation;  // best line from a subcall
+  std::list<Move> principal_variation;  // Best line from a subcall.
 
   for (Move move : legal_moves) {
     int16_t child_depth = depth;
     if (child_depth <= 0) {
-      child_depth = 1;  // We are already doing a quiescense search
+      child_depth = 1;  // We are already doing a quiescense search.
     } else {
       if (check_extra_depth && (node.IsCheck() || node.MoveIsCheckFast(move))) {
         ++child_depth;
         --check_extra_depth;
       }
     }
-    // Search tables
+    
+    // Search tables.
     ZobristHash new_hash = node.HashAfterMove(move);
     NodeInfo child;
     if (no_return_table_.Get(new_hash.Get())) {
@@ -293,7 +308,7 @@ Engine::NodeInfo Engine::RunSearch(
       }
     }
 
-    // Deal with wrong bounds
+    // Deal with wrong bounds.
     switch (child.type) {
     case NodeType::kFailLow:
       if (-child.eval < beta) {
@@ -325,12 +340,12 @@ Engine::NodeInfo Engine::RunSearch(
       break;
     }
 
-    // Could've changed after subcalls
+    // Could've changed after subcalls.
     if (!proceed_with_batch_value_) {
       return NodeInfo();
     }
 
-    // Update evaluation
+    // Update evaluation.
     if (-child.eval > eval) {
       eval = -child.eval;
       best_move = move;
@@ -351,7 +366,7 @@ Engine::NodeInfo Engine::RunSearch(
       }
     }
     if (alpha >= beta) {
-      // Node is a cut node
+      // Node is a cut node.
       type = NodeType::kFailHigh;
       if (!node.MoveIsCheckFast(move) &&
         node.GetSquare(move.to) == pieces::kNone &&
@@ -364,7 +379,7 @@ Engine::NodeInfo Engine::RunSearch(
     }
   }
 
-  // Write to transposition table and return
+  // Write to transposition table and return.
   if (eval > highest_eval_ - longest_checkmate_) {
     --eval;
   }

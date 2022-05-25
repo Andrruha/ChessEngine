@@ -49,7 +49,6 @@ class EngineManager {
   EngineMode engine_mode_ = EngineMode::kForce;
   Player engine_color_ = Player::kBlack;
 
-  bool thinking_ = false;
   bool thought_ = false;
   bool abort_thinking_ = false;
 

@@ -10,7 +10,7 @@
 namespace chess_engine {
 
 // Represents a node in the search tree.
-// Has position functionality, but also handles hash
+// Has position functionality, but also handles hash.
 class Node {
  public:
   explicit Node(const ZobristHashFunction& hash_func);
@@ -20,7 +20,7 @@ class Node {
   bool IsCheckmate() const;
   bool IsStalemate() const;
 
-  // Whose turn it is
+  // Whose turn it is.
   Player PlayerToMove() const;
   void SetPlayerToMove(Player player);
   void PassTheTurn();
@@ -33,9 +33,9 @@ class Node {
 
   void MakeMove(Move move);
 
-  // Incrementaly update hash after a move in a current position
+  // Incrementaly update hash after a move in a current position.
   void HashMove(ZobristHash* hash, Move move) const;
-  // Somewhat similar to MakeMove, but only for hash
+  // Somewhat similar to MakeMove, but only for hash.
   ZobristHash HashAfterMove(Move move) const;
 
   Piece GetSquare(int file, int rank) const;

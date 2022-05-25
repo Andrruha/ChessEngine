@@ -30,13 +30,13 @@ protocol_(protocol), engine_(engine) {
 }
 
 void EngineManager::StartMainLoop() {
-  // TODO(Andrey): loop condition
+  // TODO(Andrey): Loop condition.
   while (true) {
     protocol_->ProcessCommands();
     abort_thinking_ = false;
     thought_ = false;
     if (engine_mode_ == EngineMode::kAnalyse) {
-      Think();  // don't set thought to true, because depth mught be too low
+      Think();  // Don't set thought to true, because depth might be too low.
     } else if (
       engine_->GetPosition().PlayerToMove() == engine_color_ &&
       engine_mode_ == EngineMode::kPlay
@@ -44,7 +44,7 @@ void EngineManager::StartMainLoop() {
       Think();
       thought_ = true;
     }
-    protocol_->ProcessCommands();  // Migth've recieved commands while thinking
+    protocol_->ProcessCommands();  // Migth've recieved commands while thinking.
     if (
       engine_->GetPosition().PlayerToMove() == engine_color_ &&
       engine_mode_ == EngineMode::kPlay &&
@@ -78,6 +78,7 @@ void EngineManager::SetMode(EngineMode mode) {
   if (mode == EngineMode::kPlay) {
     engine_color_ = engine_->GetPosition().PlayerToMove();
   }
+  abort_thinking_ = true;
 }
 
 void EngineManager::MakeMove(Move move) {

@@ -1,5 +1,5 @@
 // FEN (Forsyth–Edwards Notation) is a popular chess notation for describing
-// chess positions
+// chess positions.
 
 #ifndef SRC_FEN_H_
 #define SRC_FEN_H_

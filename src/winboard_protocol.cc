@@ -63,7 +63,7 @@ void WinboardProtocol::ProcessCommands() {
 
 void WinboardProtocol::StartInputLoop() {
   input_thread_ = std::thread([this]{
-    // TODO(Andrey): Better loop condition
+    // TODO(Andrey): Better loop condition.
     while (true) {
       std::string command;
       std::getline(std::cin, command);

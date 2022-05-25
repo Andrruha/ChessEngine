@@ -6,6 +6,8 @@
 
 namespace chess_engine {
 
+// Simple hash table, that deals with collisions, by simply
+// ovewrriting entries with the same indecies.
 template<class T, int index_size>
 class PositionTable {
  public:
@@ -18,7 +20,7 @@ class PositionTable {
     }
   }
   void Set(uint64_t key, T value) {
-    elements_[key & mask_] = {key, value};  // Always replace for now
+    elements_[key & mask_] = {key, value};  // Always replace for now.
   }
   void Clear() {
     elements_ = std::vector<Entry>(1ull << index_size, {0ull, T()});

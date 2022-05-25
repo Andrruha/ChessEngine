@@ -13,7 +13,7 @@ unsigned char PieceToFen(Piece piece) {
   unsigned char ret;
   switch (piece.type) {
     case PieceType::kNone:
-      return ' ';  // Return, because color doesn't make sense here
+      return ' ';  // Return, because color doesn't make sense here.
       break;
     case PieceType::kPawn:
       ret = 'p';
@@ -34,10 +34,10 @@ unsigned char PieceToFen(Piece piece) {
       ret = 'k';
       break;
     default:
-      assert(false);  // Piece type is invalid
-      return '?';  // Return, because color is nonsensical
+      assert(false);  // Piece type is invalid.
+      return '?';  // Return, because color is nonsensical here.
   }
-  // Check if player is valid
+  // Check if player is valid.
   assert(piece.player == Player::kWhite || piece.player == Player::kBlack);
   if (piece.player == Player::kWhite) {
     ret = std::toupper(ret);
@@ -139,7 +139,7 @@ Position FenToPosition(const std::string& fen) {
   } else if (parts[1] == "b") {
     ret.SetPlayerToMove(Player::kBlack);
   } else {
-    assert(false);  // Invalid player
+    assert(false);  // Invalid player.
   }
 
   if (parts[2].find('K') == std::string::npos) {
@@ -240,7 +240,7 @@ std::string MoveToUci(Move move) {
   return ret;
 }
 
-// TODO(Andrey): Fix promotion in UCI
+// TODO(Andrey): Fix promotion in UCI.
 Move UciToMove(const std::string& str) {
   Move ret;
   ret.from = StringToCoordinates(str);

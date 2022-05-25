@@ -41,7 +41,7 @@ uint64_t ZobristHashFunction::HashPiece(Coordinates square, Piece piece) const {
     auto table = black_piece_tables_[static_cast<int8_t>(piece.type)-1];
     return table[square.file][square.rank];
   } else {
-    return 0ull;  // Empty squares
+    return 0ull;  // Empty squares.
   }
 }
 
