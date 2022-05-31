@@ -27,6 +27,7 @@ class WinboardProtocol : public AbstractProtocol {
   ) const override;
  private:
   void SendFeatures();
+  static double StringToSeconds(const std::string& str);
 
   std::condition_variable commands_recieved_;
   std::mutex mutex_;

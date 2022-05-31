@@ -9,6 +9,7 @@
 #include "src/engine.h"
 #include "src/fen.h"
 #include "src/position.h"
+#include "src/time_control.h"
 
 namespace chess_engine {
 
@@ -21,6 +22,7 @@ class EngineManager {
   void NewGame();
   void SetPosition(const Position& Position);
   void SetMode(EngineMode mode);
+  void SetTime(TimeControl tc);
 
   void MakeMove(Move move);
   void UndoMove();
@@ -48,6 +50,7 @@ class EngineManager {
   Game game_ = Game(starting_position_);
   EngineMode engine_mode_ = EngineMode::kForce;
   Player engine_color_ = Player::kBlack;
+  TimeControl time_control_ = {40, 600.0, 0};
 
   bool thought_ = false;
   bool abort_thinking_ = false;
