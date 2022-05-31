@@ -15,6 +15,7 @@ protocol_(protocol), engine_(engine) {
   protocol_->SetSetBoardCallback(
     [this](const Position& position){SetPosition(position);}
   );
+  protocol_->SetSetTimeCallback([this](TimeControl tc){SetTime(tc);});
 
   engine_->SetProceedWithBatchCallback([this](){return ProceedWithBatch();});
   engine_->SetReportProgressCallback([this](
@@ -81,6 +82,11 @@ void EngineManager::SetMode(EngineMode mode) {
   abort_thinking_ = true;
 }
 
+
+void EngineManager::SetTime(TimeControl tc) {
+  time_control_ = tc;
+}
+
 void EngineManager::MakeMove(Move move) {
   engine_->MakeMove(move);
   game_.MakeMove(move);
@@ -141,7 +147,7 @@ bool EngineManager::ProceedWithBatch() {
     return false;
     break;
   case EngineMode::kPlay:
-    return elapsed.count() < 5.0;
+    return elapsed.count() < time_control_.GuaranteedTimePerMove() * 0.95;
     break;
   case EngineMode::kAnalyse:
     return true;

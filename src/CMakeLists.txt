@@ -1,7 +1,8 @@
 add_library(
   EngineLibrary
   chess_defines.cc
-  fen.cc position.cc
+  fen.cc 
+  position.cc
   count_moves.cc
   zobrist_hash.cc
   node.cc
@@ -10,6 +11,7 @@ add_library(
   winboard_protocol.cc
   engine_manager.cc
   game.cc
+  time_control.cc
 )
 target_include_directories(EngineLibrary PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

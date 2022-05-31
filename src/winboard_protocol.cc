@@ -56,6 +56,12 @@ void WinboardProtocol::ProcessCommands() {
         move_recieved_callback_(XBoardToMove(parts[1]));
       } else if (parts[0] == "undo") {
         undo_recieved_callback_();
+      } else if (parts[0] == "level") {
+        TimeControl tc;
+        tc.period = std::stoi(parts[1]);
+        tc.seconds_per_period = StringToSeconds(parts[2]);
+        tc.increment = std::stoi(parts[3]);
+        set_time_callback_(tc);
       }
     }
   }
@@ -96,6 +102,17 @@ void WinboardProtocol::DisplayInfo(
 void WinboardProtocol::SendFeatures() {
   std::cout << "feature colors=0 playother=1 setboard=1 usermove=1 done=1"
             << std::endl;
+}
+
+double WinboardProtocol::StringToSeconds(const std::string& str) {
+  size_t delimeter_pos = str.find(':');
+  if (delimeter_pos == std::string::npos) {
+    return 60 * std::stoi(str);
+  } else {
+    std::string minutes_str = str.substr(0, delimeter_pos);
+    std::string seconds_str = str.substr(delimeter_pos + 1);
+    return 60 * std::stoi(minutes_str) + std::stoi(seconds_str);
+  }
 }
 
 }  // namespace chess_engine

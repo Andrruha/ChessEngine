@@ -36,4 +36,10 @@ void AbstractProtocol::SetSetBoardCallback(
   set_board_callback_ = callback;
 }
 
+void AbstractProtocol::SetSetTimeCallback(
+  std::function<void(TimeControl)> callback
+) {
+  set_time_callback_ = callback;
+}
+
 }  // namespace chess_engine

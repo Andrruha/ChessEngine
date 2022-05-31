@@ -7,6 +7,7 @@
 
 #include "src/chess_defines.h"
 #include "src/position.h"
+#include "src/time_control.h"
 
 namespace chess_engine {
 
@@ -41,6 +42,7 @@ class AbstractProtocol {
   void SetSetColorCallback(std::function<void(Player)> callback);
   void SetSetModeCallback(std::function<void(EngineMode)> callback);
   void SetSetBoardCallback(std::function<void(const Position&)> callback);
+  void SetSetTimeCallback(std::function<void(TimeControl)> callback);
 
  protected:
   std::function<void()> new_game_callback_;
@@ -49,6 +51,7 @@ class AbstractProtocol {
   std::function<void(Player)> set_color_callback_;
   std::function<void(EngineMode)> set_mode_callback_;
   std::function<void(Position)> set_board_callback_;
+  std::function<void(TimeControl)> set_time_callback_;
 };
 
 }  // namespace chess_engine
