@@ -2,7 +2,7 @@
 Hello! This is my first ever chess engine ~~(well, almost first)~~. A chess engine is essentially a computer program that plays chess. The engine is far from being good by chess engine standards, but was fun to make and is fun to play against. It isn't very fast and doesn't understand any strategy, but I lost to it quite a few times in the most embarrassing ways.
 
 <p align="center">
-  <img height=30% width=30% src="https://lichess1.org/game/export/gif/FEBjVCsC.gif">
+  <img height=30% width=30% src="https://lichess1.org/game/export/gif/xSSrCeKT.gif">
 </p>
 
 It adheres to the XBoard protocol. Not all the commands are implemented and not all functionality is fully supported, but it's enough to play a game against it in WinBoard or launch analysis mode. It's also possible to play against it from the command line.
