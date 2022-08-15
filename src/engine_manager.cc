@@ -8,8 +8,8 @@ namespace chess_engine {
 EngineManager::EngineManager(AbstractProtocol* protocol, Engine* engine):
 protocol_(protocol), engine_(engine) {
   protocol_->SetNewGameCallback([this](){NewGame();});
-  protocol_->SetMoveRecievedCallback([this](Move move){MakeMove(move);});
-  protocol_->SetUndoRecievedCallback([this](){UndoMove();});
+  protocol_->SetMoveReceivedCallback([this](Move move){MakeMove(move);});
+  protocol_->SetUndoReceivedCallback([this](){UndoMove();});
   protocol_->SetSetColorCallback([this](Player value){SetEngineColor(value);});
   protocol_->SetSetModeCallback([this](EngineMode mode){SetMode(mode);});
   protocol_->SetSetBoardCallback(
@@ -36,7 +36,7 @@ void EngineManager::StartMainLoop() {
     protocol_->ProcessCommands();
     abort_thinking_ = false;
     thought_ = false;
-    if (engine_mode_ == EngineMode::kAnalyse) {
+    if (engine_mode_ == EngineMode::kAnalyze) {
       Think();  // Don't set thought to true, because depth might be too low.
     } else if (
       engine_->GetPosition().PlayerToMove() == engine_color_ &&
@@ -45,7 +45,7 @@ void EngineManager::StartMainLoop() {
       Think();
       thought_ = true;
     }
-    protocol_->ProcessCommands();  // Migth've recieved commands while thinking.
+    protocol_->ProcessCommands();  // Might've received commands while thinking.
     if (
       engine_->GetPosition().PlayerToMove() == engine_color_ &&
       engine_mode_ == EngineMode::kPlay &&
@@ -149,7 +149,7 @@ bool EngineManager::ProceedWithBatch() {
   case EngineMode::kPlay:
     return elapsed.count() < time_control_.GuaranteedTimePerMove() * 0.95;
     break;
-  case EngineMode::kAnalyse:
+  case EngineMode::kAnalyze:
     return true;
   default:
     return false;

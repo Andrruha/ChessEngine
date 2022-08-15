@@ -14,16 +14,16 @@ namespace chess_engine {
 enum struct EngineMode {
   kForce = 0,
   kPlay = 1,
-  kAnalyse = 2
+  kAnalyze = 2
 };
 
 // Handles interaction with protocols, such as XBoard, UCI
 // or possibly my own UI.
 class AbstractProtocol {
  public:
-  // Process recieved commands, call corresponding callbacks.
+  // Process received commands, call corresponding callbacks.
   virtual void ProcessCommands() = 0;
-  // Start recieving commands.
+  // Start receiving commands.
   virtual void StartInputLoop() = 0;
 
   // Send an engine move via protocol.
@@ -37,8 +37,8 @@ class AbstractProtocol {
   ) const = 0;
 
   void SetNewGameCallback(std::function<void()> callback);
-  void SetMoveRecievedCallback(std::function<void(Move)> callback);
-  void SetUndoRecievedCallback(std::function<void()>);
+  void SetMoveReceivedCallback(std::function<void(Move)> callback);
+  void SetUndoReceivedCallback(std::function<void()>);
   void SetSetColorCallback(std::function<void(Player)> callback);
   void SetSetModeCallback(std::function<void(EngineMode)> callback);
   void SetSetBoardCallback(std::function<void(const Position&)> callback);
@@ -46,8 +46,8 @@ class AbstractProtocol {
 
  protected:
   std::function<void()> new_game_callback_;
-  std::function<void(Move)> move_recieved_callback_;
-  std::function<void()> undo_recieved_callback_;
+  std::function<void(Move)> move_received_callback_;
+  std::function<void()> undo_received_callback_;
   std::function<void(Player)> set_color_callback_;
   std::function<void(EngineMode)> set_mode_callback_;
   std::function<void(Position)> set_board_callback_;

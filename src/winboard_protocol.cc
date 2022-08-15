@@ -12,7 +12,7 @@ namespace chess_engine {
 
 void WinboardProtocol::ProcessCommands() {
   std::unique_lock lock(mutex_);
-  if (commands_recieved_.wait_for(
+  if (commands_received_.wait_for(
     lock, std::chrono::seconds(0), [&]{return !command_queue_.empty();}
   )) {
     while (!command_queue_.empty()) {
@@ -20,7 +20,7 @@ void WinboardProtocol::ProcessCommands() {
       command_queue_.pop();
       std::ofstream log;
       log.open("log_protocol.txt", std::ios_base::app);
-      log << "recieved: " << command << "\n";
+      log << "received: " << command << "\n";
       log.close();
       std::vector<std::string> parts;
       int pos = -1;
@@ -43,7 +43,7 @@ void WinboardProtocol::ProcessCommands() {
       } else if (parts[0] == "go") {
         set_mode_callback_(EngineMode::kPlay);
       } else if (parts[0] == "analyze") {
-        set_mode_callback_(EngineMode::kAnalyse);
+        set_mode_callback_(EngineMode::kAnalyze);
       } else if (parts[0] == "new") {
         new_game_callback_();
       } else if (parts[0] == "setboard") {
@@ -53,9 +53,9 @@ void WinboardProtocol::ProcessCommands() {
         );
         set_board_callback_(position);
       } else if (parts[0] == "usermove") {
-        move_recieved_callback_(XBoardToMove(parts[1]));
+        move_received_callback_(XBoardToMove(parts[1]));
       } else if (parts[0] == "undo") {
-        undo_recieved_callback_();
+        undo_received_callback_();
       } else if (parts[0] == "level") {
         TimeControl tc;
         tc.period = std::stoi(parts[1]);
@@ -75,7 +75,7 @@ void WinboardProtocol::StartInputLoop() {
       std::getline(std::cin, command);
       std::lock_guard lock(mutex_);
       command_queue_.push(command);
-      commands_recieved_.notify_one();
+      commands_received_.notify_one();
     }
   });
 }
