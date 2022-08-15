@@ -29,7 +29,7 @@ class WinboardProtocol : public AbstractProtocol {
   void SendFeatures();
   static double StringToSeconds(const std::string& str);
 
-  std::condition_variable commands_recieved_;
+  std::condition_variable commands_received_;
   std::mutex mutex_;
   std::queue<std::string> command_queue_;
   std::thread input_thread_;

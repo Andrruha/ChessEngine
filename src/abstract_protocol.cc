@@ -6,16 +6,16 @@ void AbstractProtocol::SetNewGameCallback(std::function<void()> callback) {
   new_game_callback_ = callback;
 }
 
-void AbstractProtocol::SetMoveRecievedCallback(
+void AbstractProtocol::SetMoveReceivedCallback(
   std::function<void(Move)> callback
 ) {
-  move_recieved_callback_ = callback;
+  move_received_callback_ = callback;
 }
 
-void AbstractProtocol::SetUndoRecievedCallback(
+void AbstractProtocol::SetUndoReceivedCallback(
   std::function<void()> callback
 ) {
-  undo_recieved_callback_ = callback;
+  undo_received_callback_ = callback;
 }
 
 void AbstractProtocol::SetSetColorCallback(
