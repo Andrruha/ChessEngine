@@ -45,7 +45,7 @@ void EngineManager::StartMainLoop() {
       Think();
       thought_ = true;
     }
-    protocol_->ProcessCommands();  // Migth've recieved commands while thinking.
+    protocol_->ProcessCommands();  // Might've received commands while thinking.
     if (
       engine_->GetPosition().PlayerToMove() == engine_color_ &&
       engine_mode_ == EngineMode::kPlay &&
